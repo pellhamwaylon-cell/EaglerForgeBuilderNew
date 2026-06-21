@@ -6,6 +6,8 @@
     <title>EaglerForge & Server Builder</title>
     <link rel="stylesheet" href="stylesheet.css" />
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
     <style>
       :root {
         --bg-dark: #1e1e1e;
@@ -94,6 +96,9 @@
 
       #run-btn { background-color: #5ba55b; }
       #run-btn:hover { background-color: #4c8f4c; }
+
+      #export-zip-btn { background-color: #8e44ad; }
+      #export-zip-btn:hover { background-color: #732d91; }
 
       #export-jar-btn {
         display: none; 
@@ -417,6 +422,25 @@
           <value name="POS"><block type="blockpos_getxyz"></block></value>
           <value name="TARGET_DIM"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
         </block>
+
+        <block type="world_generate_ore">
+          <value name="BLOCK_TYPE"><shadow type="text"><field name="TEXT">mod:custom_deepslate_diamond</field></shadow></value>
+          <value name="VEIN_SIZE"><shadow type="math_number"><field name="NUM">8</field></shadow></value>
+          <value name="CHANCES_PER_CHUNK"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+          <value name="MIN_Y"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+          <value name="MAX_Y"><shadow type="math_number"><field name="NUM">16</field></shadow></value>
+        </block>
+        
+        <block type="world_spawn_structure">
+          <value name="STRUCTURE_ID"><shadow type="text"><field name="TEXT">mod:ancient_city</field></shadow></value>
+          <value name="SPAWN_CHANCE"><shadow type="math_number"><field name="NUM">0.01</field></shadow></value>
+        </block>
+
+        <block type="world_replace_block">
+          <value name="TARGET_BLOCK"><shadow type="text"><field name="TEXT">minecraft:stone</field></shadow></value>
+          <value name="REPLACE_WITH"><shadow type="text"><field name="TEXT">mod:deepslate</field></shadow></value>
+          <value name="BELOW_Y_LEVEL"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+        </block>
       </category>
 
       <category name="Sound & Media" colour="#f1c40f">
@@ -607,6 +631,9 @@
       <button class="action-btn" id="save">Save</button>
       <button class="action-btn" id="export">Export JS</button>
       <button class="action-btn" id="export-jar-btn">Compile to .JAR</button>
+      
+      <button class="action-btn" id="export-zip-btn">Export Texture .ZIP</button>
+
       <button class="action-btn" id="run-btn">Run Code</button>
       
       <div style="margin-left: 20px;">
@@ -747,6 +774,43 @@
         if(Blockly && Blockly.getMainWorkspace()) {
             Blockly.getMainWorkspace().registerButtonCallback("playerHelpButton", playerHelpButton);
         }
+
+        // Texture Pack ZIP Exporter Logic
+        document.getElementById('export-zip-btn').addEventListener('click', function() {
+          if (typeof JSZip === 'undefined') {
+              alert("JSZip library didn't load! Check your internet connection.");
+              return;
+          }
+          
+          const zip = new JSZip();
+          
+          // 1. Generate the required 1.12.2 pack.mcmeta (Format 3 is for 1.11 - 1.12.2)
+          const mcmeta = {
+              "pack": {
+                  "pack_format": 3,
+                  "description": "EaglerForge 1.20 Backport Resources"
+              }
+          };
+          zip.file("pack.mcmeta", JSON.stringify(mcmeta, null, 2));
+
+          // 2. Create the Minecraft folder structure
+          const blockFolder = zip.folder("assets").folder("minecraft").folder("textures").folder("blocks");
+          const itemFolder = zip.folder("assets").folder("minecraft").folder("textures").folder("items");
+
+          // 3. Drop a quick README inside so you know exactly where to put your images after extraction
+          blockFolder.file("block_textures_readme.txt", "Drop your backported 1.20 .PNG files exactly in this folder!");
+          itemFolder.file("item_textures_readme.txt", "Drop your custom item .PNG files exactly in this folder!");
+
+          // 4. Generate and trigger browser download
+          zip.generateAsync({type:"blob"}).then(function(content) {
+              const link = document.createElement('a');
+              link.href = URL.createObjectURL(content);
+              link.download = "EaglerForge_Custom_Pack.zip";
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+          });
+        });
       };
     </script>
   </body>
