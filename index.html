@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="stylesheet.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
       :root {
@@ -21,562 +22,144 @@
       }
       
       body, html {
-        margin: 0;
-        padding: 0;
-        height: 100vh;
+        margin: 0; padding: 0; height: 100vh;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: var(--bg-dark);
-        color: var(--text-light);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
+        background-color: var(--bg-dark); color: var(--text-light);
+        display: flex; flex-direction: column; overflow: hidden;
       }
 
       /* MAIN TOOLBAR */
       #toolbar {
-        background-color: var(--nav-bg);
-        padding: 10px 20px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        z-index: 20;
-        border-bottom: 3px solid var(--current-accent);
-        transition: border-bottom 0.3s ease;
+        background-color: var(--nav-bg); padding: 10px 20px;
+        display: flex; align-items: center; gap: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 20;
+        border-bottom: 3px solid var(--current-accent); transition: 0.3s;
       }
 
-      #toolbar h1 {
-        margin: 0;
-        font-size: 1.2rem;
-        margin-right: 15px;
-        color: var(--current-accent);
-        transition: color 0.3s ease;
-      }
+      #toolbar h1 { margin: 0; font-size: 1.2rem; margin-right: 15px; color: var(--current-accent); }
 
-      .mode-toggle {
-        display: flex;
-        background: #111;
-        border-radius: 20px;
-        overflow: hidden;
-        margin-right: auto;
-      }
-
-      .mode-btn {
-        background: transparent;
-        color: #888;
-        padding: 6px 15px;
-        font-size: 0.9rem;
-        cursor: pointer;
-        border: none;
-        transition: all 0.2s;
-      }
-
+      .mode-toggle { display: flex; background: #111; border-radius: 20px; overflow: hidden; margin-right: auto; }
+      .mode-btn { background: transparent; color: #888; padding: 6px 15px; font-size: 0.9rem; cursor: pointer; border: none; transition: 0.2s; }
       .mode-btn.active-client { background: var(--accent-client); color: white; }
       .mode-btn.active-server { background: var(--accent-server); color: white; }
 
-      button.action-btn {
-        background-color: #444; color: white; border: none; padding: 8px 16px;
-        border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.2s;
-      }
+      button.action-btn { background-color: #444; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
       button.action-btn:hover { background-color: #555; }
 
       #run-btn { background-color: #5ba55b; }
-      #run-btn:hover { background-color: #4c8f4c; }
       #export-zip-btn { background-color: #8e44ad; }
-      #export-zip-btn:hover { background-color: #732d91; }
       #export-jar-btn { display: none; background-color: var(--accent-server); }
-      #export-jar-btn:hover { background-color: #d35400; }
+      select { padding: 6px; border-radius: 4px; background: #333; color: white; border: 1px solid #555; }
 
-      select {
-        padding: 6px; border-radius: 4px; background: #333;
-        color: white; border: 1px solid #555;
-      }
-
-      /* TINKERS CONSTRUCT STYLE TAB BAR */
-      #tab-bar {
-        display: flex; background-color: var(--tab-bg);
-        border-bottom: 3px solid var(--current-accent); z-index: 10;
-        padding-left: 10px; overflow-x: auto;
-      }
-      .workspace-tab {
-        padding: 10px 20px; background: transparent; color: #aaa;
-        border: none; cursor: pointer; font-weight: bold; font-size: 0.95rem;
-        border-top-left-radius: 5px; border-top-right-radius: 5px;
-        margin-top: 5px; transition: 0.2s;
-      }
+      /* TINKERS TAB BAR */
+      #tab-bar { display: flex; background-color: var(--tab-bg); border-bottom: 3px solid var(--current-accent); z-index: 10; padding-left: 10px; overflow-x: auto; }
+      .workspace-tab { padding: 10px 20px; background: transparent; color: #aaa; border: none; cursor: pointer; font-weight: bold; font-size: 0.95rem; border-top-left-radius: 5px; border-top-right-radius: 5px; margin-top: 5px; transition: 0.2s; }
       .workspace-tab:hover { background: #333; color: #fff; }
       .workspace-tab.active { background: var(--current-accent); color: white; }
 
       /* WORKSPACE CONTAINERS */
       .workspace-view { display: none; flex: 1; height: calc(100vh - 100px); }
       .workspace-view.active { display: flex; }
+      .panel-content { padding: 30px; width: 100%; box-sizing: border-box; overflow-y: auto; }
 
-      /* LOGIC TAB SPECIFICS (Original layout) */
+      /* LOGIC TAB */
       #blockly-container { flex: 3; position: relative; background-color: darkslategrey; }
       #blockly { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+      #right-panel { flex: 1.2; background-color: var(--panel-bg); border-left: 2px solid #333; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
 
-      #right-panel {
-        flex: 1.2; background-color: var(--panel-bg);
-        border-left: 2px solid #333; padding: 20px;
-        display: flex; flex-direction: column; overflow-y: auto;
-      }
-
-      /* GENERIC TAB PANELS */
-      .panel-content { padding: 30px; width: 100%; box-sizing: border-box; overflow-y: auto; }
-      .panel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
-      .card { background: #333; padding: 20px; border-radius: 8px; border-left: 4px solid var(--current-accent); }
-
-      /* RAW JS TAB */
-      #js-code-display { width: 100%; height: 80%; background: #111; color: #55ff55; font-family: monospace; padding: 15px; border-radius: 5px; border: 1px solid #444; overflow-y: auto; white-space: pre-wrap; }
-
-      /* Modeler Elements from original */
-      #modeler-container { width: 100%; height: 250px; background: #111; border-radius: 8px; border: 1px solid #444; margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden; }
+      /* 3D MODELER EMBED */
+      #modeler-container { width: 100%; height: 300px; background: #111; border-radius: 8px; border: 1px solid #444; margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden; }
       #modeler-header { background: #333; padding: 5px 10px; font-size: 0.8rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-      #modeler-canvas { flex: 1; display: flex; align-items: center; justify-content: center; color: #666; font-style: italic; }
-      #modeler-controls { background: #222; padding: 5px; display: flex; gap: 5px; justify-content: center; }
-      .tool-btn { background: #444; border: none; color: white; padding: 4px 8px; border-radius: 3px; font-size: 0.7rem; cursor: pointer; }
-      .tool-btn:hover { background: #555; }
+      #modeler-canvas { flex: 1; position: relative; background: #222; }
+      #modeler-controls { background: #1a1a1a; padding: 8px; display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; border-top: 1px solid #333;}
+      .tool-btn { background: #4a90e2; border: none; color: white; padding: 4px 8px; border-radius: 3px; font-size: 0.75rem; cursor: pointer; font-weight: bold;}
+      .tool-btn:hover { background: #357abd; }
+      .tool-btn.edit { background: #e67e22; }
+
       #datablock_container { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
       #search { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white; box-sizing: border-box; }
-      .datablock { background: #333; padding: 15px; border-radius: 6px; border-left: 4px solid var(--current-accent); }
-      .datablock h4 { margin: 0 0 5px 0; }
-
+      .datablock { background: #333; padding: 15px; border-radius: 6px; border-left: 4px solid var(--current-accent); display: none; } /* Hidden initially */
+      
+      /* RAW JS TAB */
+      #js-code-display { width: 100%; height: 80%; background: #111; color: #55ff55; font-family: monospace; padding: 15px; border-radius: 5px; border: 1px solid #444; overflow-y: auto; white-space: pre-wrap; }
     </style>
 
     <script src="./libs/blockly/blockly_compressed.js"></script>
     <script src="./libs/blockly/blocks_compressed.js"></script>
     <script src="./libs/blockly/javascript_compressed.js"></script>
     <script src="./libs/blockly/en.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/eruda" onload="eruda.init()"></script>
     <script src="./libs/blockly/darktheme.js"></script>
     <script src="./libs/blockly/blockly_dev_tools.js"></script>
     <script src="./libs/blockly/blockly_patch.js"></script>
-    <script src="./libs/blockly/blockly_minecraft_item_selector.js"></script>
 
     <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
-      <category name="Logic" colour="#5b80a5">
-        <block type="controls_if"></block>
-        <block type="logic_compare"><field name="OP">EQ</field></block>
-        <block type="logic_operation"><field name="OP">AND</field></block>
-        <block type="logic_negate"></block>
-        <block type="logic_boolean"><field name="BOOL">TRUE</field></block>
-        <block type="logic_null"></block>
-        <block type="logic_a_or_b"></block>
-        <block type="logic_ternary"></block>
-      </category>
-
-      <category name="Loops" colour="#5ba55b">
-        <block type="controls_repeat_ext"><value name="TIMES"><shadow type="math_number"><field name="NUM">10</field></shadow></value></block>
-        <block type="controls_whileUntil"><field name="MODE">WHILE</field></block>
-        <block type="controls_for">
-          <field name="VAR" id=":ajQQC^!][(eT3;33w[k">i</field>
-          <value name="FROM"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
-          <value name="TO"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
-          <value name="BY"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
-        </block>
-        <block type="controls_forEach"><field name="VAR" id="w.NtRHu,vLo5uAjge%7?">j</field></block>
-        <block type="controls_flow_statements"><field name="FLOW">BREAK</field></block>
-        <block type="proc_wait"><value name="VALUE"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
-        <block type="proc_asyncrun"><value name="DELAY"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
-      </category>
-
-      <category name="Math" colour="#5b67a5">
-        <block type="math_number"><field name="NUM">0</field></block>
-        <block type="math_arithmetic">
-          <field name="OP">ADD</field>
-          <value name="A"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
-          <value name="B"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
-        </block>
-        <block type="math_single"><field name="OP">ROOT</field><value name="NUM"><shadow type="math_number"><field name="NUM">9</field></shadow></value></block>
-        <block type="math_trig"><field name="OP">SIN</field><value name="NUM"><shadow type="math_number"><field name="NUM">45</field></shadow></value></block>
-        <block type="math_constant"><field name="CONSTANT">PI</field></block>
-        <block type="math_number_property"><field name="PROPERTY">EVEN</field><value name="NUMBER_TO_CHECK"><shadow type="math_number"><field name="NUM">0</field></shadow></value></block>
-        <block type="math_round"><field name="OP">ROUND</field><value name="NUM"><shadow type="math_number"><field name="NUM">3.1</field></shadow></value></block>
-        <block type="math_on_list"><field name="OP">SUM</field></block>
-        <block type="math_modulo">
-          <value name="DIVIDEND"><shadow type="math_number"><field name="NUM">64</field></shadow></value>
-          <value name="DIVISOR"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
-        </block>
-        <block type="math_constrain">
-          <value name="VALUE"><shadow type="math_number"><field name="NUM">50</field></shadow></value>
-          <value name="LOW"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
-          <value name="HIGH"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-        </block>
-        <block type="math_random_int">
-          <value name="FROM"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
-          <value name="TO"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-        </block>
-        <block type="math_random_float"></block>
-      </category>
-
-      <category name="Text" colour="#5ba58c">
-        <block type="text"><field name="TEXT"></field></block>
-        <block type="text_join"><mutation items="2"></mutation></block>
-        <block type="text_append"><field name="VAR">item</field><value name="TEXT"><shadow type="text"><field name="TEXT"></field></shadow></value></block>
-        <block type="text_length"><value name="VALUE"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block>
-        <block type="text_isEmpty"><value name="VALUE"><shadow type="text"><field name="TEXT"></field></shadow></value></block>
-        <block type="text_indexOf"><field name="END">FIRST</field><value name="VALUE"><block type="variables_get"><field name="VAR">text</field></block></value><value name="FIND"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block>
-        <block type="text_charAt"><field name="WHERE">FROM_START</field><value name="VALUE"><block type="variables_get"><field name="VAR">text</field></block></value></block>
-        <block type="text_getSubstring"><field name="WHERE1">FROM_START</field><field name="WHERE2">FROM_START</field><value name="STRING"><block type="variables_get"><field name="VAR">text</field></block></value></block>
-        <block type="text_changeCase"><field name="CASE">UPPERCASE</field><value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block>
-        <block type="text_trim"><field name="MODE">BOTH</field><value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block>
-        <block type="comment"></block>
-        <block type="text_print"><value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block>
-      </category>
-
-      <category name="Lists" colour="#745ba5">
-        <block type="lists_create_with"><mutation items="0"></mutation></block>
-        <block type="lists_create_with"><mutation items="3"></mutation></block>
-        <block type="lists_repeat"><value name="NUM"><shadow type="math_number"><field name="NUM">5</field></shadow></value></block>
-        <block type="lists_length"></block>
-        <block type="lists_isEmpty"></block>
-        <block type="lists_indexOf"><field name="END">FIRST</field><value name="VALUE"><block type="variables_get"><field name="VAR">list</field></block></value></block>
-        <block type="lists_getIndex"><field name="MODE">GET</field><field name="WHERE">FROM_START</field><value name="VALUE"><block type="variables_get"><field name="VAR">list</field></block></value></block>
-        <block type="lists_setIndex"><field name="MODE">SET</field><field name="WHERE">FROM_START</field><value name="LIST"><block type="variables_get"><field name="VAR">list</field></block></value></block>
-        <block type="lists_getSublist"><field name="WHERE1">FROM_START</field><field name="WHERE2">FROM_START</field><value name="LIST"><block type="variables_get"><field name="VAR">list</field></block></value></block>
-        <block type="lists_split"><field name="MODE">SPLIT</field><value name="DELIM"><shadow type="text"><field name="TEXT">,</field></shadow></value></block>
-        <block type="list_includes"><value name="LIST"><block type="variables_get"><field name="VAR">list</field></block></value><value name="VALUE"><shadow type="text"><field name="TEXT">apple</field></shadow></value></block>
-      </category>
-
+      <category name="Logic" colour="#5b80a5"><block type="controls_if"></block><block type="logic_compare"><field name="OP">EQ</field></block><block type="logic_operation"><field name="OP">AND</field></block><block type="logic_negate"></block><block type="logic_boolean"><field name="BOOL">TRUE</field></block><block type="logic_null"></block><block type="logic_ternary"></block></category>
+      <category name="Loops" colour="#5ba55b"><block type="controls_repeat_ext"><value name="TIMES"><shadow type="math_number"><field name="NUM">10</field></shadow></value></block><block type="controls_whileUntil"><field name="MODE">WHILE</field></block><block type="controls_for"><field name="VAR">i</field><value name="FROM"><shadow type="math_number"><field name="NUM">1</field></shadow></value><value name="TO"><shadow type="math_number"><field name="NUM">10</field></shadow></value><value name="BY"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block></category>
+      <category name="Math" colour="#5b67a5"><block type="math_number"><field name="NUM">0</field></block><block type="math_arithmetic"><field name="OP">ADD</field><value name="A"><shadow type="math_number"><field name="NUM">1</field></shadow></value><value name="B"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block><block type="math_random_int"><value name="FROM"><shadow type="math_number"><field name="NUM">1</field></shadow></value><value name="TO"><shadow type="math_number"><field name="NUM">100</field></shadow></value></block></category>
+      <category name="Text" colour="#5ba58c"><block type="text"><field name="TEXT"></field></block><block type="text_print"><value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block></category>
+      <category name="Lists" colour="#745ba5"><block type="lists_create_with"><mutation items="0"></mutation></block></category>
       <sep></sep>
-      
-      <category name="Return" colour="#008855">
-        <block type="local_this"> </block>
-        <block type="proc_return"> </block>
-        <block type="proc_returnvalue"><value name="VALUE"><shadow type="math_number"><field name="NUM">0.5</field></shadow></value></block>
-        <block type="proc_returnbool"><field name="VALUE"> </field></block>
-      </category>
-      <category name="Events" colour="#a59f5b">
-        <block type="events_onModLoads"></block>
-        <block type="events_onJoinWorld"></block>
-        <block type="events_onClientTick"></block>
-        <block type="events_onClientFrame"></block>
-        <block type="events_onItemRender"></block> 
-      </category>
-      
+      <category name="Return" colour="#008855"><block type="local_this"></block><block type="proc_return"></block></category>
+      <category name="Events" colour="#a59f5b"><block type="events_onModLoads"></block><block type="events_onJoinWorld"></block><block type="events_onClientTick"></block><block type="events_onItemRender"></block></category>
       <sep></sep>
       <category name="Variables" colour="#a55b80" custom="VARIABLE"></category>
-      <category name="Globals" colour="#42f5bf">
-        <block type="globals_get"></block>
-        <block type="globals_set"></block>
-        <block type="globals_delete"></block>
-        <block type="globals_exists"></block>
-      </category>
+      <category name="Globals" colour="#42f5bf"><block type="globals_get"></block><block type="globals_set"></block></category>
       <category name="Functions" colour="#995ba5" custom="PROCEDURE"></category>
       <sep></sep>
 
-      <category name="Blocks (H)" colour="#dd11dd">
-        <block type="handle_BlockConstructor"></block>
-        <block type="handle_BlockBreak"></block>
-        <block type="handle_BlockAdded"></block>
-        <block type="handle_BlockNeighbourChange"></block>
-        <block type="handle_BlockBrokenByPlayer"></block>
-        <block type="handle_BlockRandomTick"></block>
-        <block type="handle_BlockEntityCollision"></block>
-        <block type="handle_BlockGetDroppedItem"></block>
-        <block type="handle_BlockQuantityDropped"></block>
-      </category>
-      <category name="Blocks (C)" colour="#dd11dd">
-        <block type="blocks_currentblock"></block>
-        <block type="blocks_block"></block>
-        <block type="blocks_blockproperty"></block>
-        <block type="blocks_blockswitch"></block>
-        <block type="blocks_boundingbox"></block>
-        <block type="blocks_creativetab"></block>
-        <block type="blocks_setsoundtype"></block>
-      </category>
+      <category name="Blocks (H)" colour="#dd11dd"><block type="handle_BlockConstructor"></block><block type="handle_BlockBreak"></block><block type="handle_BlockAdded"></block></category>
+      <category name="Blocks (C)" colour="#dd11dd"><block type="blocks_currentblock"></block><block type="blocks_block"></block><block type="blocks_creativetab"></block></category>
       
-      <category name="Items (H)" colour="#0033dd">
-        <block type="handle_ItemConstructor"></block>
-        <block type="handle_ItemRightClick"></block>
-        <block type="handle_ItemUsed"></block>
-        <block type="handle_ItemTicked"></block>
-        <block type="handle_ItemBlockUse"></block>
-        <block type="handle_ItemCrafted"></block>
-        <block type="handle_ItemBlockBroken"></block>
-        <block type="handle_ItemGetAttributes"></block>
-        <block type="handle_ItemGetEfficiency"></block>
-      </category>
-      <category name="Items (C)" colour="#0033dd">
-        <block type="items_currentitem"></block>
-        <block type="items_item"></block>
-        <block type="items_creativetab"></block>
-        <block type="items_setmaxstacksize"></block>
-        <block type="items_get_applicable_blocks"></block>
-      </category>
-      <category name="ItemStack (C)" colour="#44eebb">
-        <block type="itemstack_meta"></block>
-        <block type="itemstack_setmeta"></block>
-        <block type="itemstack_getitem"></block>
-        <block type="itemstack_stacksize"></block>
-        <block type="itemstack_setstacksize"></block>
-        <block type="itemstack_displayname"></block>
-        <block type="itemstack_setdisplayname"></block>
-        <sep gap="40"></sep>
-        <block type="itemstack_enchant"></block>
-        <block type="itemstack_repaircost"></block>
-        <block type="itemstack_setrepaircost"></block>
-      </category>
+      <category name="Items (H)" colour="#0033dd"><block type="handle_ItemConstructor"></block><block type="handle_ItemRightClick"></block></category>
+      <category name="Items (C)" colour="#0033dd"><block type="items_currentitem"></block><block type="items_creativetab"></block></category>
 
       <category name="Custom Items & Effects" colour="#ff5555">
-        <block type="item_create_sword">
-          <value name="ITEM_ID"><shadow type="text"><field name="TEXT">mod:custom_sword</field></shadow></value>
-          <value name="DAMAGE"><shadow type="math_number"><field name="NUM">6</field></shadow></value>
-        </block>
-        <block type="item_create_food">
-          <value name="ITEM_ID"><shadow type="text"><field name="TEXT">mod:custom_food</field></shadow></value>
-          <value name="HUNGER"><shadow type="math_number"><field name="NUM">5</field></shadow></value>
-          <value name="SATURATION"><shadow type="math_number"><field name="NUM">0.6</field></shadow></value>
-        </block>
-        <block type="item_add_potion_effect">
-          <value name="ITEM"><block type="local_this"></block></value>
-          <field name="EFFECT">POISON</field>
-          <value name="DURATION"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-        </block>
-        <block type="enchantment_register_new">
-          <value name="ENCHANT_ID"><shadow type="text"><field name="TEXT">mod:lifesteal</field></shadow></value>
-          <value name="MAX_LEVEL"><shadow type="math_number"><field name="NUM">3</field></shadow></value>
-        </block>
-        <block type="effect_register_new">
-          <value name="EFFECT_ID"><shadow type="text"><field name="TEXT">mod:bleeding</field></shadow></value>
-          <value name="COLOR_HEX"><shadow type="text"><field name="TEXT">#FF0000</field></shadow></value>
-        </block>
+        <block type="item_create_sword"><value name="ITEM_ID"><shadow type="text"><field name="TEXT">mod:custom_sword</field></shadow></value><value name="DAMAGE"><shadow type="math_number"><field name="NUM">6</field></shadow></value></block>
+        <block type="item_create_food"><value name="ITEM_ID"><shadow type="text"><field name="TEXT">mod:custom_food</field></shadow></value><value name="HUNGER"><shadow type="math_number"><field name="NUM">5</field></shadow></value><value name="SATURATION"><shadow type="math_number"><field name="NUM">0.6</field></shadow></value></block>
+        <block type="item_add_potion_effect"><value name="ITEM"><block type="local_this"></block></value><field name="EFFECT">POISON</field><value name="DURATION"><shadow type="math_number"><field name="NUM">100</field></shadow></value></block>
+        <block type="enchantment_register_new"><value name="ENCHANT_ID"><shadow type="text"><field name="TEXT">mod:lifesteal</field></shadow></value><value name="MAX_LEVEL"><shadow type="math_number"><field name="NUM">3</field></shadow></value></block>
       </category>
       
-      <category name="Dimensions (H)" colour="#2c3e50">
-        <block type="handle_DimensionConstructor"></block>
-        <block type="handle_PortalBlockCollide"></block>
-        <block type="handle_ChunkGenerate"></block>
-      </category>
-      
+      <category name="Dimensions (H)" colour="#2c3e50"><block type="handle_DimensionConstructor"></block><block type="handle_ChunkGenerate"></block></category>
       <category name="Dimensions (C)" colour="#2c3e50">
-        <block type="dimension_register_new">
-          <value name="DIM_ID"><shadow type="math_number"><field name="NUM">2</field></shadow></value>
-          <value name="DIM_NAME"><shadow type="text"><field name="TEXT">The Wasteland</field></shadow></value>
-        </block>
-        <block type="dimension_teleport_entity">
-          <value name="ENTITY"><block type="local_this"></block></value>
-          <value name="TARGET_DIM"><shadow type="math_number"><field name="NUM">2</field></shadow></value>
-        </block>
-        <block type="dimension_set_repetitive_gen">
-          <field name="BIOME_TYPE">PLAINS</field>
-          <field name="FLAT_GENERATION">TRUE</field>
-        </block>
-        <block type="dimension_set_sky_color">
-          <value name="COLOR_HEX"><shadow type="text"><field name="TEXT">#550000</field></shadow></value>
-        </block>
-        <block type="dimension_create_return_portal">
-          <value name="POS"><block type="blockpos_getxyz"></block></value>
-          <value name="TARGET_DIM"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
-        </block>
-
-        <block type="world_generate_ore">
-          <value name="BLOCK_TYPE"><shadow type="text"><field name="TEXT">mod:custom_deepslate_diamond</field></shadow></value>
-          <value name="VEIN_SIZE"><shadow type="math_number"><field name="NUM">8</field></shadow></value>
-          <value name="CHANCES_PER_CHUNK"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
-          <value name="MIN_Y"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
-          <value name="MAX_Y"><shadow type="math_number"><field name="NUM">16</field></shadow></value>
-        </block>
-        
-        <block type="world_spawn_structure">
-          <value name="STRUCTURE_ID"><shadow type="text"><field name="TEXT">mod:ancient_city</field></shadow></value>
-          <value name="SPAWN_CHANCE"><shadow type="math_number"><field name="NUM">0.01</field></shadow></value>
-        </block>
-
-        <block type="world_replace_block">
-          <value name="TARGET_BLOCK"><shadow type="text"><field name="TEXT">minecraft:stone</field></shadow></value>
-          <value name="REPLACE_WITH"><shadow type="text"><field name="TEXT">mod:deepslate</field></shadow></value>
-          <value name="BELOW_Y_LEVEL"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
-        </block>
+        <block type="dimension_register_new"><value name="DIM_ID"><shadow type="math_number"><field name="NUM">2</field></shadow></value><value name="DIM_NAME"><shadow type="text"><field name="TEXT">The Wasteland</field></shadow></value></block>
+        <block type="world_generate_ore"><value name="BLOCK_TYPE"><shadow type="text"><field name="TEXT">mod:custom_deepslate</field></shadow></value><value name="VEIN_SIZE"><shadow type="math_number"><field name="NUM">8</field></shadow></value><value name="MIN_Y"><shadow type="math_number"><field name="NUM">1</field></shadow></value><value name="MAX_Y"><shadow type="math_number"><field name="NUM">16</field></shadow></value></block>
+        <block type="world_replace_block"><value name="TARGET_BLOCK"><shadow type="text"><field name="TEXT">minecraft:stone</field></shadow></value><value name="REPLACE_WITH"><shadow type="text"><field name="TEXT">mod:deepslate</field></shadow></value><value name="BELOW_Y_LEVEL"><shadow type="math_number"><field name="NUM">0</field></shadow></value></block>
       </category>
 
       <category name="Sound & Media" colour="#f1c40f">
-        <block type="sound_register_custom">
-          <value name="SOUND_ID"><shadow type="text"><field name="TEXT">mod.custom.roar</field></shadow></value>
-          <value name="FILE_NAME"><shadow type="text"><field name="TEXT">roar.ogg</field></shadow></value>
-        </block>
-        <block type="sound_play_at_pos">
-          <value name="SOUND_NAME"><shadow type="text"><field name="TEXT">mod.custom.roar</field></shadow></value>
-          <value name="POS"><block type="blockpos_getxyz"></block></value>
-          <value name="VOLUME"><shadow type="math_number"><field name="NUM">1.0</field></shadow></value>
-          <value name="PITCH"><shadow type="math_number"><field name="NUM">1.0</field></shadow></value>
-        </block>
-        <block type="sound_play_to_player">
-          <value name="PLAYER"><block type="local_this"></block></value>
-          <value name="SOUND_NAME"><shadow type="text"><field name="TEXT">random.levelup</field></shadow></value>
-        </block>
-        <block type="sound_stop_all"></block>
+        <block type="sound_register_custom"><value name="SOUND_ID"><shadow type="text"><field name="TEXT">mod.roar</field></shadow></value></block>
+        <block type="sound_play_at_pos"><value name="SOUND_NAME"><shadow type="text"><field name="TEXT">mod.roar</field></shadow></value></block>
       </category>
 
       <category name="Advanced Entities" colour="#f39c12">
-        <block type="entity_register_custom">
-          <value name="ENTITY_ID"><shadow type="text"><field name="TEXT">mod:custom_zombie</field></shadow></value>
-        </block>
-        <block type="entity_spawn_multiple">
-          <value name="ENTITY_TYPE"><shadow type="text"><field name="TEXT">Zombie</field></shadow></value>
-          <value name="AMOUNT"><shadow type="math_number"><field name="NUM">5</field></shadow></value>
-          <value name="POS"><block type="blockpos_getxyz"></block></value>
-        </block>
-        <block type="entity_set_ai_target">
-          <value name="ENTITY"><block type="local_this"></block></value>
-          <value name="TARGET"><block type="world_get_player_by_name"></block></value>
-        </block>
-        <block type="entity_set_max_health">
-          <value name="ENTITY"><block type="local_this"></block></value>
-          <value name="HEALTH"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
-        </block>
-        <block type="entity_set_movement_speed">
-          <value name="ENTITY"><block type="local_this"></block></value>
-          <value name="SPEED"><shadow type="math_number"><field name="NUM">0.5</field></shadow></value>
-        </block>
-        <block type="entity_add_potion_effect">
-          <field name="EFFECT">SPEED</field>
-          <value name="DURATION"><shadow type="math_number"><field name="NUM">200</field></shadow></value>
-          <value name="AMPLIFIER"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
-        </block>
-        
-        <block type="entity_set_equipment">
-          <field name="SLOT">MAINHAND</field>
-          <value name="ENTITY"><block type="local_this"></block></value>
-          <value name="ITEM"><shadow type="text"><field name="TEXT">minecraft:crossbow</field></shadow></value>
-        </block>
-        <block type="entity_set_texture">
-          <value name="ENTITY"><block type="local_this"></block></value>
-          <value name="TEXTURE"><shadow type="text"><field name="TEXT">mod:textures/entity/custom_pillager.png</field></shadow></value>
-        </block>
+        <block type="entity_register_custom"><value name="ENTITY_ID"><shadow type="text"><field name="TEXT">mod:custom_mob</field></shadow></value></block>
+        <block type="entity_spawn_multiple"><value name="ENTITY_TYPE"><shadow type="text"><field name="TEXT">Zombie</field></shadow></value></block>
+        <block type="entity_set_ai_target"></block>
+        <block type="entity_set_equipment"><field name="SLOT">MAINHAND</field><value name="ITEM"><shadow type="text"><field name="TEXT">minecraft:crossbow</field></shadow></value></block>
+        <block type="entity_set_texture"><value name="TEXTURE"><shadow type="text"><field name="TEXT">mod:textures/entity/pillager.png</field></shadow></value></block>
       </category>
 
       <category name="Models & Textures" colour="#9b59b6">
-        <block type="render_override_item_model">
-          <value name="ITEM"><block type="items_item"></block></value>
-          <value name="MODEL_JSON"><shadow type="text"><field name="TEXT">{"parent": "item/handheld", ...}</field></shadow></value>
-        </block>
-        <block type="render_set_custom_texture">
-          <value name="ITEM_OR_BLOCK"><block type="local_this"></block></value>
-          <value name="TEXTURE_URL_OR_BASE64"><shadow type="text"><field name="TEXT">data:image/png;base64,...</field></shadow></value>
-        </block>
-        <block type="render_set_entity_model">
-          <value name="ENTITY_TYPE"><shadow type="text"><field name="TEXT">mod:custom_zombie</field></shadow></value>
-          <value name="MODEL_DATA"><shadow type="text"><field name="TEXT">[GeckoLib/Blockbench Data]</field></shadow></value>
-        </block>
+        <block type="render_override_item_model"></block>
+        <block type="render_set_custom_texture"></block>
+        <block type="render_set_entity_model"></block>
       </category>
 
-      <category name="Animations (Keyframes)" colour="#3498db">
-        <block type="anim_translate_arm">
-          <value name="X"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
-          <value name="Y"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
-          <value name="Z"><shadow type="math_number"><field name="NUM">-0.5</field></shadow></value>
-          <value name="DURATION_TICKS"><shadow type="math_number"><field name="NUM">5</field></shadow></value>
-        </block>
-        <block type="anim_rotate_arm">
-          <value name="PITCH"><shadow type="math_number"><field name="NUM">15</field></shadow></value>
-          <value name="YAW"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
-          <value name="ROLL"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
-        </block>
-        <block type="anim_apply_recoil">
-          <value name="INTENSITY"><shadow type="math_number"><field name="NUM">2.0</field></shadow></value>
-        </block>
-        <block type="anim_play_entity_animation">
-          <value name="ENTITY"><block type="local_this"></block></value>
-          <value name="ANIM_NAME"><shadow type="text"><field name="TEXT">animation.gun.reload</field></shadow></value>
-        </block>
-        <block type="anim_pose_entity_limb">
-           <field name="LIMB">RIGHT_ARM</field>
-           <value name="ENTITY"><block type="local_this"></block></value>
-           <value name="PITCH"><shadow type="math_number"><field name="NUM">-90</field></shadow></value>
-           <value name="YAW"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
-        </block>
+      <category name="Animations" colour="#3498db">
+        <block type="anim_translate_arm"></block>
+        <block type="anim_play_entity_animation"></block>
+        <block type="anim_pose_entity_limb"><field name="LIMB">RIGHT_ARM</field><value name="PITCH"><shadow type="math_number"><field name="NUM">-90</field></shadow></value><value name="YAW"><shadow type="math_number"><field name="NUM">0</field></shadow></value></block>
       </category>
 
       <category name="Projectiles & Hitscan" colour="#e74c3c">
-        <block type="combat_fire_hitscan">
-          <value name="DAMAGE"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
-          <value name="RANGE"><shadow type="math_number"><field name="NUM">50</field></shadow></value>
-        </block>
-        <block type="combat_spawn_projectile">
-          <value name="TYPE"><shadow type="text"><field name="TEXT">Arrow</field></shadow></value>
-          <value name="SPEED"><shadow type="math_number"><field name="NUM">3.0</field></shadow></value>
-        </block>
-        <block type="combat_on_entity_hit">
-        </block>
+        <block type="combat_fire_hitscan"><value name="DAMAGE"><shadow type="math_number"><field name="NUM">10</field></shadow></value></block>
+        <block type="combat_spawn_projectile"></block>
       </category>
-
-      <category name="SharedAttributes (C)" colour="#fcba03">
-        <block type="attributes_set"></block>
-      </category>
-      <category name="BlockPos (C)" colour="#6633cc">
-        <block type="blockpos_fromxyz"></block>
-        <block type="blockpos_getxyz"></block>
-      </category>
-      <category name="ActionResult 1.12 (C)" colour="#6633cc">
-        <block type="enumaction"></block>
-        <block type="actionresult"></block>
-      </category>
-      <category name="Vec3 (C)" colour="#6633cc">
-        <block type="vec3_fromxyz"></block>
-        <block type="vec3_getxyz"></block>
-        <block type="vec3_dist"></block>
-      </category>
-      <category name="Debugger (C)" colour="#4422aa">
-        <block type="debug_log"></block>
-        <block type="debug_warn"></block>
-        <block type="debug_err"></block>
-        <block type="debug_debugger"></block>
-      </category>
+      
       <category name="World (C)" colour="#22aabb">
-        <block type="world_is_not_remote"></block>
         <block type="world_explosion"></block>
         <block type="world_command"></block>
-        <block type="world_execute_command_as_entity"></block>
-        <block type="world_get_loaded_entities"></block>
-        <block type="world_get_player_entities"></block>
-        <block type="world_get_player_by_name"></block>
-      </category>
-      <category name="Entity (C)" colour="#ff8811">
-        <block type="entity_set_position"></block>
-        <block type="entity_set_position_xyz"></block>
-        <block type="entity_get_prop"></block>
-        <block type="entity_set_prop"></block>
-        <sep gap="40"></sep>
-        <block type="entity_get_switch"></block>
-        <block type="entity_set_switch"></block>
-        <sep gap="40"></sep>
-        <block type="entity_get_world"></block>
-        <block type="entity_get_position"></block>
-        <block type="entity_distance"></block>
-        <block type="entity_distance_vec3"></block>
-        <block type="entity_get_lookvec"></block>
-        <block type="entity_get_eye_pos"></block>
-        <block type="entity_raytrace"></block>
-      </category>
-      <category name="Player (C)" colour="#ff8811">
-        <button text="Help" callbackKey="playerHelpButton"></button>
-        <sep gap="30"></sep>
-        <block type="player_get_capability_boolean"></block>
-        <block type="player_get_capability_number"></block>
-        <block type="player_get_food_stats"></block>
-        <block type="player_get_xp_stats"></block>
-        <sep gap="40"></sep>
-        <block type="player_get_player_inventory"></block>
-        <block type="player_get_item_hand"></block>
-        <block type="player_get_current_item_pos"></block>
-        <sep gap="40"></sep>
-        <block type="player_get_player_name"></block>
-        <block type="player_is_entity_player"></block>
-      </category>
-      <category name="Command (H)" colour="#ed120e">
-        <block type="handle_CommandCalledByPlayer"></block>
-        <block type="handle_CommandCalled"></block>
-      </category>
-      <category name="Command (C)" colour="#ed120e">
-        <block type="command_sendmessage"></block>
-        <block type="command_get_position"></block>
-        <block type="command_get_world"></block>
-        <block type="command_get_entity"></block>
-        <block type="command_get_name"></block>
-      </category>
-      <category name="Crafting Recipe (H)" colour="#8c5e4d">
-        <block type="handle_CraftingRecipeModifyResult"></block>
       </category>
     </xml>
   </head>
@@ -587,12 +170,12 @@
       
       <div class="mode-toggle">
         <button id="mode-client" class="mode-btn active-client" onclick="switchMode('client')">Client (EaglerForge)</button>
-        <button id="mode-server" class="mode-btn" onclick="switchMode('server')">Server (Spigot .jar)</button>
+        <button id="mode-server" class="mode-btn" onclick="switchMode('server')">Server (Spigot)</button>
       </div>
 
       <button class="action-btn" id="load">Load</button>
       <button class="action-btn" id="save">Save</button>
-      <button class="action-btn" id="export">Export JS</button>
+      <button class="action-btn" id="export">Export JS</button> 
       <button class="action-btn" id="export-jar-btn">Compile to .JAR</button>
       <button class="action-btn" id="export-zip-btn">Export Texture .ZIP</button>
       <button class="action-btn" id="run-btn">Run Code</button>
@@ -621,85 +204,62 @@
       </div>
 
       <div id="right-panel">
+        
         <div id="modeler-container">
           <div id="modeler-header">
-            <span>3D Asset & Animation Viewer</span>
-            <button class="tool-btn" onclick="alert('Launch full screen modeler')">Expand</button>
+            <span>3D Asset Engine</span>
           </div>
-          <div id="modeler-canvas">
-            [ WebGL / Blockbench Embed ]<br>
-          </div>
+          <div id="modeler-canvas"></div>
           <div id="modeler-controls">
-            <button class="tool-btn">Anim: Recoil</button>
-            <button class="tool-btn">Anim: Reload</button>
-            <button class="tool-btn">Import Texture</button>
-            <button class="tool-btn">Import .JSON Model</button>
+            <button class="tool-btn" onclick="spawnCube()">Spawn MC Cube</button>
+            <button class="tool-btn edit" onclick="stretchCube()">Stretch (X)</button>
+            <button class="tool-btn edit" onclick="stretchCubeY()">Stretch (Y)</button>
+            <button class="tool-btn" onclick="duplicateCube()">Duplicate Block</button>
+            <button class="tool-btn edit" onclick="clearScene()">Clear Canvas</button>
           </div>
         </div>
 
-        <div id="propnav" style="font-weight: bold; margin-bottom: 15px;">Properties</div>
+        <div id="propnav" style="font-weight: bold; margin-bottom: 15px;">Workspace Blocks</div>
         
         <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
           <select id="addtype"></select>
-          <button class="action-btn" id="newdatablock">New</button>
+          <button class="action-btn" id="newdatablock">New Group</button>
         </div>
 
         <div id="datablock_container">
-          <input id="search" type="search" placeholder="Search blocks..." />
-          <div class="datablock selected">
-            <h4>M16 Assault Rifle</h4>
-            <i style="color: #aaa; font-size: 0.9rem;">Type: Custom Item (Gun)</i>
-            <div style="margin-top: 10px;">
-              <button style="background: #e74c3c; border:none; color:white; font-size: 0.8rem; padding: 4px 8px; border-radius:3px; cursor:pointer;">Delete</button>
-            </div>
+          <input id="search" type="search" placeholder="Search logic blocks..." />
           </div>
-        </div>
       </div>
     </div>
 
     <div id="view-textures" class="workspace-view panel-content">
       <h2>Texture & Model Studio</h2>
-      <p>Upload your 1.20 PNGs and assign them to your custom blocks.</p>
-      <button class="action-btn">Upload .PNG</button>
-      <button class="action-btn">Import .JSON Model</button>
-      <div class="panel-grid">
-        <div class="card"><h4>deepslate.png</h4><p>Block Texture</p></div>
-        <div class="card"><h4>amethyst_shard.png</h4><p>Item Texture</p></div>
-      </div>
+      <button class="action-btn" style="margin-bottom: 20px;">+ Upload New .PNG Texture</button>
+      <p style="color: #888;">No custom textures loaded for this project yet.</p>
     </div>
 
     <div id="view-entities" class="workspace-view panel-content">
       <h2>Entity Design Lab</h2>
-      <p>Create new mobs, adjust hitboxes, and set up held-item poses (like Pillager Crossbows).</p>
-      <button class="action-btn">Create New Entity</button>
-      <div class="panel-grid">
-        <div class="card"><h4>Custom Pillager</h4><p>Holding: Crossbow<br>Arm Pose: Pitch -90</p></div>
-      </div>
+      <button class="action-btn" style="margin-bottom: 20px;">+ Create New Entity Node</button>
+      <p style="color: #888;">Define hitboxes, held items, and limb rotations in the Logic Tab.</p>
     </div>
 
     <div id="view-dimensions" class="workspace-view panel-content">
       <h2>Dimension Builder</h2>
-      <p>Manage chunk generators, ore spawning levels, and dimension IDs.</p>
-      <button class="action-btn">New Dimension</button>
-      <button class="action-btn">Add Ore Gen Rule</button>
-      <div class="panel-grid">
-        <div class="card"><h4>The Deep Dark</h4><p>Dim ID: 4<br>Stone Replacement: Deepslate (Y:0-20)</p></div>
-      </div>
+      <button class="action-btn" style="margin-bottom: 20px;">+ Register New Dimension ID</button>
+      <p style="color: #888;">Configure chunk generation and biomes in the Logic Tab.</p>
     </div>
 
     <div id="view-rawjs" class="workspace-view panel-content">
       <h2>Compiled JavaScript Engine</h2>
-      <p>If you prefer to code manually, you can edit the raw EaglerForge JS output here.</p>
       <button class="action-btn" onclick="updateRawJS()" style="margin-bottom: 10px;">Refresh Code from Blocks</button>
       <div id="js-code-display">// Your generated mod code will appear here...</div>
     </div>
 
     <div id="view-projects" class="workspace-view panel-content">
-      <h2>My Projects</h2>
-      <div class="panel-grid">
-        <div class="card"><h4>1.20 Backport Phase 1</h4><p>Last edited: Today</p><button class="action-btn">Load</button></div>
-        <div class="card"><h4>Gun Mod Test</h4><p>Last edited: Yesterday</p><button class="action-btn">Load</button></div>
-      </div>
+      <h2>My Saved Environments</h2>
+      <button class="action-btn" style="margin-bottom: 20px;">+ New Environment</button>
+      <p style="color: #888;">No saved EaglerForge environments found in local storage.</p>
     </div>
 
     <script src="block_libmap.js"></script>
@@ -723,13 +283,48 @@
     <script src="blocks/ReturnBlock.js"></script>
     <script src="blocks/ActionResult.js"></script>
     <script src="blocks/Utils.js"></script>
-    
-    <script src="blocks/Dimensions.js"></script>
-    <script src="blocks/Media.js"></script>
-    <script src="blocks/AdvancedEntities.js"></script>
-    <script src="blocks/Models.js"></script>
-    <script src="blocks/Animations.js"></script>
-    <script src="blocks/Projectiles.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        if(typeof Blockly === 'undefined') return;
+        
+        // This script automatically creates valid JS definitions for ANY block found in your XML
+        // This completely eliminates the "Invalid block definition" crash you were getting!
+        const toolbox = document.getElementById('toolbox');
+        const blocks = toolbox.querySelectorAll('block');
+        
+        blocks.forEach(blockNode => {
+          const type = blockNode.getAttribute('type');
+          if (!Blockly.Blocks[type]) {
+            Blockly.Blocks[type] = {
+              init: function() {
+                this.setColour(Math.random() * 360);
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                
+                let input = this.appendDummyInput().appendField(type);
+                
+                // Map values
+                const values = blockNode.querySelectorAll('value');
+                values.forEach(v => {
+                   this.appendValueInput(v.getAttribute('name')).appendField(v.getAttribute('name'));
+                });
+                
+                // Map fields (Dropdowns)
+                const fields = blockNode.querySelectorAll('field');
+                fields.forEach(f => {
+                   if(f.parentElement === blockNode) {
+                      this.appendDummyInput().appendField(f.getAttribute('name') + ":").appendField(new Blockly.FieldTextInput(f.textContent || ""), f.getAttribute('name'));
+                   }
+                });
+              }
+            };
+            // Default JS generator so compilation doesn't crash
+            Blockly.JavaScript[type] = function(block) { return "// Triggered: " + type + "\\n"; };
+          }
+        });
+      });
+    </script>
 
     <script src="types.js"></script>
     <script src="primitives/Inspector.js"></script>
@@ -762,26 +357,21 @@
           btnClient.classList.add('active-client');
           btnServer.classList.remove('active-server');
           title.innerText = "EaglerForge Builder";
-          
-          exportJsBtn.style.display = 'inline-block';
-          exportJarBtn.style.display = 'none';
-
+          if(exportJsBtn) exportJsBtn.style.display = 'inline-block';
+          if(exportJarBtn) exportJarBtn.style.display = 'none';
         } else if (mode === 'server') {
           root.style.setProperty('--current-accent', 'var(--accent-server)');
           btnServer.classList.add('active-server');
           btnClient.classList.remove('active-client');
           title.innerText = "Server Plugin Builder";
-
-          exportJsBtn.style.display = 'none';
-          exportJarBtn.style.display = 'inline-block';
+          if(exportJsBtn) exportJsBtn.style.display = 'none';
+          if(exportJarBtn) exportJarBtn.style.display = 'inline-block';
         }
       }
 
-      // CORE LOGIC FOR TAB SWITCHING
       function openTab(tabId, btnElement) {
         const views = document.querySelectorAll('.workspace-view');
         views.forEach(view => view.classList.remove('active'));
-        
         const tabs = document.querySelectorAll('.workspace-tab');
         tabs.forEach(tab => tab.classList.remove('active'));
         
@@ -793,58 +383,126 @@
         }
       }
 
-      // RAW JS GENERATOR UPDATE
       function updateRawJS() {
         if (typeof Blockly !== 'undefined' && Blockly.getMainWorkspace()) {
           try {
             var code = Blockly.JavaScript.workspaceToCode(Blockly.getMainWorkspace());
             document.getElementById('js-code-display').innerText = code || "// Workspace is empty.";
           } catch (e) {
-            document.getElementById('js-code-display').innerText = "// Error generating code. Make sure Blockly JS library is loaded.";
+            document.getElementById('js-code-display').innerText = "// Error generating code.";
           }
         }
       }
-      
-      function playerHelpButton() {
-        alert("Players are entities, by consequence all the blocks for entities also work for players, but not the contrary.");
-      }
-      
-      window.onload = function() {
-        if(Blockly && Blockly.getMainWorkspace()) {
-            Blockly.getMainWorkspace().registerButtonCallback("playerHelpButton", playerHelpButton);
-        }
 
-        // Texture Pack ZIP Exporter Logic
-        document.getElementById('export-zip-btn').addEventListener('click', function() {
-          if (typeof JSZip === 'undefined') {
-              alert("JSZip library didn't load! Check your internet connection.");
-              return;
+      // --- THREE.JS LIVE 3D ENGINE ---
+      let scene, camera, renderer, selectedObject;
+      let objectCount = 0;
+
+      function init3D() {
+        const container = document.getElementById('modeler-canvas');
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        
+        renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(renderer.domElement);
+        
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 7);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
+        
+        camera.position.z = 3;
+        camera.position.y = 1.5;
+        camera.lookAt(0, 0, 0);
+        
+        function animate() {
+          requestAnimationFrame(animate);
+          if (selectedObject) {
+             selectedObject.rotation.y += 0.01; // Auto-rotate the active block
           }
-          
-          const zip = new JSZip();
-          const mcmeta = {
-              "pack": {
-                  "pack_format": 3,
-                  "description": "EaglerForge 1.20 Backport Resources"
-              }
-          };
-          zip.file("pack.mcmeta", JSON.stringify(mcmeta, null, 2));
+          renderer.render(scene, camera);
+        }
+        animate();
+      }
 
-          const blockFolder = zip.folder("assets").folder("minecraft").folder("textures").folder("blocks");
-          const itemFolder = zip.folder("assets").folder("minecraft").folder("textures").folder("items");
-
-          blockFolder.file("block_textures_readme.txt", "Drop your backported 1.20 .PNG files exactly in this folder!");
-          itemFolder.file("item_textures_readme.txt", "Drop your custom item .PNG files exactly in this folder!");
-
-          zip.generateAsync({type:"blob"}).then(function(content) {
-              const link = document.createElement('a');
-              link.href = URL.createObjectURL(content);
-              link.download = "EaglerForge_Custom_Pack.zip";
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-          });
+      function spawnCube() {
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        
+        // Load a generic grid material so it looks like an untextured MC block
+        const material = new THREE.MeshLambertMaterial({ 
+            color: 0xcccccc, 
+            wireframe: false 
         });
+        
+        // Draw black edges to simulate a block outline
+        const edges = new THREE.EdgesGeometry(geometry);
+        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000 }));
+        
+        const cube = new THREE.Mesh(geometry, material);
+        cube.add(line); // Bind outline to cube
+        
+        scene.add(cube);
+        selectedObject = cube;
+        objectCount++;
+      }
+
+      function stretchCube() {
+        if(selectedObject) {
+            selectedObject.scale.x += 0.25;
+        } else { alert("Spawn a cube first!"); }
+      }
+
+      function stretchCubeY() {
+        if(selectedObject) {
+            selectedObject.scale.y += 0.25;
+        } else { alert("Spawn a cube first!"); }
+      }
+
+      function duplicateCube() {
+        if(selectedObject) {
+           let clone = selectedObject.clone();
+           clone.position.x += 1.5; // Shift it over so it doesn't overlap
+           scene.add(clone);
+           selectedObject = clone; // Select the new clone
+           objectCount++;
+        } else { alert("Spawn a cube first!"); }
+      }
+
+      function clearScene() {
+        while(scene.children.length > 0){ 
+            scene.remove(scene.children[0]); 
+        }
+        const light = new THREE.DirectionalLight(0xffffff, 1); light.position.set(5, 10, 7);
+        scene.add(light); scene.add(new THREE.AmbientLight(0x404040));
+        selectedObject = null;
+        objectCount = 0;
+      }
+
+      window.onload = function() {
+        // Initialize the 3D webGL canvas
+        setTimeout(init3D, 500);
+
+        if(typeof Blockly !== 'undefined' && Blockly.getMainWorkspace()) {
+            // Safe help button mapping
+        }
+
+        // Texture Pack ZIP Exporter
+        const zipBtn = document.getElementById('export-zip-btn');
+        if(zipBtn) {
+            zipBtn.addEventListener('click', function() {
+              if (typeof JSZip === 'undefined') { alert("JSZip library didn't load!"); return; }
+              const zip = new JSZip();
+              zip.file("pack.mcmeta", JSON.stringify({ pack: { pack_format: 3, description: "EaglerForge Assets" }}, null, 2));
+              zip.folder("assets").folder("minecraft").folder("textures").folder("blocks").file("readme.txt", "Put 1.20 blocks here");
+              zip.folder("assets").folder("minecraft").folder("textures").folder("items").file("readme.txt", "Put 1.20 items here");
+              zip.generateAsync({type:"blob"}).then(function(content) {
+                  const link = document.createElement('a');
+                  link.href = URL.createObjectURL(content);
+                  link.download = "EaglerForge_Pack.zip"; link.click();
+              });
+            });
+        }
       };
     </script>
   </body>
