@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EaglerForge & Server Builder</title>
+    <title>EaglerForge Modular Builder</title>
     <link rel="stylesheet" href="stylesheet.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -12,6 +12,7 @@
       :root {
         --bg-dark: #1e1e1e;
         --nav-bg: #2d2d2d;
+        --tab-bg: #222222;
         --text-light: #f5f5f5;
         --accent-client: #4a90e2; 
         --accent-server: #e67e22; 
@@ -31,6 +32,7 @@
         overflow: hidden;
       }
 
+      /* MAIN TOOLBAR */
       #toolbar {
         background-color: var(--nav-bg);
         padding: 10px 20px;
@@ -38,7 +40,7 @@
         align-items: center;
         gap: 15px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        z-index: 10;
+        z-index: 20;
         border-bottom: 3px solid var(--current-accent);
         transition: border-bottom 0.3s ease;
       }
@@ -69,157 +71,76 @@
         transition: all 0.2s;
       }
 
-      .mode-btn.active-client {
-        background: var(--accent-client);
-        color: white;
-      }
-
-      .mode-btn.active-server {
-        background: var(--accent-server);
-        color: white;
-      }
+      .mode-btn.active-client { background: var(--accent-client); color: white; }
+      .mode-btn.active-server { background: var(--accent-server); color: white; }
 
       button.action-btn {
-        background-color: #444;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: background 0.2s;
+        background-color: #444; color: white; border: none; padding: 8px 16px;
+        border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.2s;
       }
-
-      button.action-btn:hover {
-        background-color: #555;
-      }
+      button.action-btn:hover { background-color: #555; }
 
       #run-btn { background-color: #5ba55b; }
       #run-btn:hover { background-color: #4c8f4c; }
-
       #export-zip-btn { background-color: #8e44ad; }
       #export-zip-btn:hover { background-color: #732d91; }
-
-      #export-jar-btn {
-        display: none; 
-        background-color: var(--accent-server);
-      }
+      #export-jar-btn { display: none; background-color: var(--accent-server); }
       #export-jar-btn:hover { background-color: #d35400; }
 
       select {
-        padding: 6px;
-        border-radius: 4px;
-        background: #333;
-        color: white;
-        border: 1px solid #555;
+        padding: 6px; border-radius: 4px; background: #333;
+        color: white; border: 1px solid #555;
       }
 
-      #main-workspace {
-        display: flex;
-        flex: 1;
-        height: calc(100vh - 60px);
+      /* TINKERS CONSTRUCT STYLE TAB BAR */
+      #tab-bar {
+        display: flex; background-color: var(--tab-bg);
+        border-bottom: 3px solid var(--current-accent); z-index: 10;
+        padding-left: 10px; overflow-x: auto;
       }
+      .workspace-tab {
+        padding: 10px 20px; background: transparent; color: #aaa;
+        border: none; cursor: pointer; font-weight: bold; font-size: 0.95rem;
+        border-top-left-radius: 5px; border-top-right-radius: 5px;
+        margin-top: 5px; transition: 0.2s;
+      }
+      .workspace-tab:hover { background: #333; color: #fff; }
+      .workspace-tab.active { background: var(--current-accent); color: white; }
 
-      #blockly-container {
-        flex: 3;
-        position: relative;
-        background-color: darkslategrey;
-      }
+      /* WORKSPACE CONTAINERS */
+      .workspace-view { display: none; flex: 1; height: calc(100vh - 100px); }
+      .workspace-view.active { display: flex; }
 
-      #blockly {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-      }
+      /* LOGIC TAB SPECIFICS (Original layout) */
+      #blockly-container { flex: 3; position: relative; background-color: darkslategrey; }
+      #blockly { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
       #right-panel {
-        flex: 1.2;
-        background-color: var(--panel-bg);
-        border-left: 2px solid #333;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        overflow-y: auto;
+        flex: 1.2; background-color: var(--panel-bg);
+        border-left: 2px solid #333; padding: 20px;
+        display: flex; flex-direction: column; overflow-y: auto;
       }
 
-      #modeler-container {
-        width: 100%;
-        height: 250px;
-        background: #111;
-        border-radius: 8px;
-        border: 1px solid #444;
-        margin-bottom: 15px;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
+      /* GENERIC TAB PANELS */
+      .panel-content { padding: 30px; width: 100%; box-sizing: border-box; overflow-y: auto; }
+      .panel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+      .card { background: #333; padding: 20px; border-radius: 8px; border-left: 4px solid var(--current-accent); }
 
-      #modeler-header {
-        background: #333;
-        padding: 5px 10px;
-        font-size: 0.8rem;
-        font-weight: bold;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
+      /* RAW JS TAB */
+      #js-code-display { width: 100%; height: 80%; background: #111; color: #55ff55; font-family: monospace; padding: 15px; border-radius: 5px; border: 1px solid #444; overflow-y: auto; white-space: pre-wrap; }
 
-      #modeler-canvas {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #666;
-        font-style: italic;
-      }
-
-      #modeler-controls {
-        background: #222;
-        padding: 5px;
-        display: flex;
-        gap: 5px;
-        justify-content: center;
-      }
-      
-      .tool-btn {
-        background: #444;
-        border: none;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 3px;
-        font-size: 0.7rem;
-        cursor: pointer;
-      }
+      /* Modeler Elements from original */
+      #modeler-container { width: 100%; height: 250px; background: #111; border-radius: 8px; border: 1px solid #444; margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden; }
+      #modeler-header { background: #333; padding: 5px 10px; font-size: 0.8rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+      #modeler-canvas { flex: 1; display: flex; align-items: center; justify-content: center; color: #666; font-style: italic; }
+      #modeler-controls { background: #222; padding: 5px; display: flex; gap: 5px; justify-content: center; }
+      .tool-btn { background: #444; border: none; color: white; padding: 4px 8px; border-radius: 3px; font-size: 0.7rem; cursor: pointer; }
       .tool-btn:hover { background: #555; }
-
-      #datablock_container {
-        margin-top: 15px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        flex: 1;
-      }
-
-      #search {
-        width: 100%;
-        padding: 8px;
-        border-radius: 4px;
-        border: 1px solid #555;
-        background: #333;
-        color: white;
-        box-sizing: border-box;
-      }
-
-      .datablock {
-        background: #333;
-        padding: 15px;
-        border-radius: 6px;
-        border-left: 4px solid var(--current-accent);
-      }
-
+      #datablock_container { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+      #search { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white; box-sizing: border-box; }
+      .datablock { background: #333; padding: 15px; border-radius: 6px; border-left: 4px solid var(--current-accent); }
       .datablock h4 { margin: 0 0 5px 0; }
+
     </style>
 
     <script src="./libs/blockly/blockly_compressed.js"></script>
@@ -364,6 +285,7 @@
         <block type="blocks_creativetab"></block>
         <block type="blocks_setsoundtype"></block>
       </category>
+      
       <category name="Items (H)" colour="#0033dd">
         <block type="handle_ItemConstructor"></block>
         <block type="handle_ItemRightClick"></block>
@@ -394,6 +316,31 @@
         <block type="itemstack_enchant"></block>
         <block type="itemstack_repaircost"></block>
         <block type="itemstack_setrepaircost"></block>
+      </category>
+
+      <category name="Custom Items & Effects" colour="#ff5555">
+        <block type="item_create_sword">
+          <value name="ITEM_ID"><shadow type="text"><field name="TEXT">mod:custom_sword</field></shadow></value>
+          <value name="DAMAGE"><shadow type="math_number"><field name="NUM">6</field></shadow></value>
+        </block>
+        <block type="item_create_food">
+          <value name="ITEM_ID"><shadow type="text"><field name="TEXT">mod:custom_food</field></shadow></value>
+          <value name="HUNGER"><shadow type="math_number"><field name="NUM">5</field></shadow></value>
+          <value name="SATURATION"><shadow type="math_number"><field name="NUM">0.6</field></shadow></value>
+        </block>
+        <block type="item_add_potion_effect">
+          <value name="ITEM"><block type="local_this"></block></value>
+          <field name="EFFECT">POISON</field>
+          <value name="DURATION"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
+        </block>
+        <block type="enchantment_register_new">
+          <value name="ENCHANT_ID"><shadow type="text"><field name="TEXT">mod:lifesteal</field></shadow></value>
+          <value name="MAX_LEVEL"><shadow type="math_number"><field name="NUM">3</field></shadow></value>
+        </block>
+        <block type="effect_register_new">
+          <value name="EFFECT_ID"><shadow type="text"><field name="TEXT">mod:bleeding</field></shadow></value>
+          <value name="COLOR_HEX"><shadow type="text"><field name="TEXT">#FF0000</field></shadow></value>
+        </block>
       </category>
       
       <category name="Dimensions (H)" colour="#2c3e50">
@@ -487,6 +434,16 @@
           <value name="DURATION"><shadow type="math_number"><field name="NUM">200</field></shadow></value>
           <value name="AMPLIFIER"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
         </block>
+        
+        <block type="entity_set_equipment">
+          <field name="SLOT">MAINHAND</field>
+          <value name="ENTITY"><block type="local_this"></block></value>
+          <value name="ITEM"><shadow type="text"><field name="TEXT">minecraft:crossbow</field></shadow></value>
+        </block>
+        <block type="entity_set_texture">
+          <value name="ENTITY"><block type="local_this"></block></value>
+          <value name="TEXTURE"><shadow type="text"><field name="TEXT">mod:textures/entity/custom_pillager.png</field></shadow></value>
+        </block>
       </category>
 
       <category name="Models & Textures" colour="#9b59b6">
@@ -522,6 +479,12 @@
         <block type="anim_play_entity_animation">
           <value name="ENTITY"><block type="local_this"></block></value>
           <value name="ANIM_NAME"><shadow type="text"><field name="TEXT">animation.gun.reload</field></shadow></value>
+        </block>
+        <block type="anim_pose_entity_limb">
+           <field name="LIMB">RIGHT_ARM</field>
+           <value name="ENTITY"><block type="local_this"></block></value>
+           <value name="PITCH"><shadow type="math_number"><field name="NUM">-90</field></shadow></value>
+           <value name="YAW"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
         </block>
       </category>
 
@@ -631,9 +594,7 @@
       <button class="action-btn" id="save">Save</button>
       <button class="action-btn" id="export">Export JS</button>
       <button class="action-btn" id="export-jar-btn">Compile to .JAR</button>
-      
       <button class="action-btn" id="export-zip-btn">Export Texture .ZIP</button>
-
       <button class="action-btn" id="run-btn">Run Code</button>
       
       <div style="margin-left: 20px;">
@@ -645,14 +606,21 @@
       </div>
     </div>
 
-    <div id="main-workspace">
-      
+    <div id="tab-bar">
+      <button class="workspace-tab active" onclick="openTab('view-logic', this)">🧱 Logic & Code</button>
+      <button class="workspace-tab" onclick="openTab('view-textures', this)">🎨 Textures & Models</button>
+      <button class="workspace-tab" onclick="openTab('view-entities', this)">🧟 Entities & Posing</button>
+      <button class="workspace-tab" onclick="openTab('view-dimensions', this)">🌌 Dimensions</button>
+      <button class="workspace-tab" onclick="openTab('view-rawjs', this)">💻 Raw JS</button>
+      <button class="workspace-tab" onclick="openTab('view-projects', this)">📂 Projects</button>
+    </div>
+
+    <div id="view-logic" class="workspace-view active">
       <div id="blockly-container">
         <div id="blockly"></div>
       </div>
 
       <div id="right-panel">
-        
         <div id="modeler-container">
           <div id="modeler-header">
             <span>3D Asset & Animation Viewer</span>
@@ -678,7 +646,6 @@
 
         <div id="datablock_container">
           <input id="search" type="search" placeholder="Search blocks..." />
-          
           <div class="datablock selected">
             <h4>M16 Assault Rifle</h4>
             <i style="color: #aaa; font-size: 0.9rem;">Type: Custom Item (Gun)</i>
@@ -686,8 +653,52 @@
               <button style="background: #e74c3c; border:none; color:white; font-size: 0.8rem; padding: 4px 8px; border-radius:3px; cursor:pointer;">Delete</button>
             </div>
           </div>
-
         </div>
+      </div>
+    </div>
+
+    <div id="view-textures" class="workspace-view panel-content">
+      <h2>Texture & Model Studio</h2>
+      <p>Upload your 1.20 PNGs and assign them to your custom blocks.</p>
+      <button class="action-btn">Upload .PNG</button>
+      <button class="action-btn">Import .JSON Model</button>
+      <div class="panel-grid">
+        <div class="card"><h4>deepslate.png</h4><p>Block Texture</p></div>
+        <div class="card"><h4>amethyst_shard.png</h4><p>Item Texture</p></div>
+      </div>
+    </div>
+
+    <div id="view-entities" class="workspace-view panel-content">
+      <h2>Entity Design Lab</h2>
+      <p>Create new mobs, adjust hitboxes, and set up held-item poses (like Pillager Crossbows).</p>
+      <button class="action-btn">Create New Entity</button>
+      <div class="panel-grid">
+        <div class="card"><h4>Custom Pillager</h4><p>Holding: Crossbow<br>Arm Pose: Pitch -90</p></div>
+      </div>
+    </div>
+
+    <div id="view-dimensions" class="workspace-view panel-content">
+      <h2>Dimension Builder</h2>
+      <p>Manage chunk generators, ore spawning levels, and dimension IDs.</p>
+      <button class="action-btn">New Dimension</button>
+      <button class="action-btn">Add Ore Gen Rule</button>
+      <div class="panel-grid">
+        <div class="card"><h4>The Deep Dark</h4><p>Dim ID: 4<br>Stone Replacement: Deepslate (Y:0-20)</p></div>
+      </div>
+    </div>
+
+    <div id="view-rawjs" class="workspace-view panel-content">
+      <h2>Compiled JavaScript Engine</h2>
+      <p>If you prefer to code manually, you can edit the raw EaglerForge JS output here.</p>
+      <button class="action-btn" onclick="updateRawJS()" style="margin-bottom: 10px;">Refresh Code from Blocks</button>
+      <div id="js-code-display">// Your generated mod code will appear here...</div>
+    </div>
+
+    <div id="view-projects" class="workspace-view panel-content">
+      <h2>My Projects</h2>
+      <div class="panel-grid">
+        <div class="card"><h4>1.20 Backport Phase 1</h4><p>Last edited: Today</p><button class="action-btn">Load</button></div>
+        <div class="card"><h4>Gun Mod Test</h4><p>Last edited: Yesterday</p><button class="action-btn">Load</button></div>
       </div>
     </div>
 
@@ -765,6 +776,34 @@
           exportJarBtn.style.display = 'inline-block';
         }
       }
+
+      // CORE LOGIC FOR TAB SWITCHING
+      function openTab(tabId, btnElement) {
+        const views = document.querySelectorAll('.workspace-view');
+        views.forEach(view => view.classList.remove('active'));
+        
+        const tabs = document.querySelectorAll('.workspace-tab');
+        tabs.forEach(tab => tab.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        btnElement.classList.add('active');
+
+        if (tabId === 'view-logic' && typeof Blockly !== 'undefined') {
+          Blockly.svgResize(Blockly.getMainWorkspace());
+        }
+      }
+
+      // RAW JS GENERATOR UPDATE
+      function updateRawJS() {
+        if (typeof Blockly !== 'undefined' && Blockly.getMainWorkspace()) {
+          try {
+            var code = Blockly.JavaScript.workspaceToCode(Blockly.getMainWorkspace());
+            document.getElementById('js-code-display').innerText = code || "// Workspace is empty.";
+          } catch (e) {
+            document.getElementById('js-code-display').innerText = "// Error generating code. Make sure Blockly JS library is loaded.";
+          }
+        }
+      }
       
       function playerHelpButton() {
         alert("Players are entities, by consequence all the blocks for entities also work for players, but not the contrary.");
@@ -783,8 +822,6 @@
           }
           
           const zip = new JSZip();
-          
-          // 1. Generate the required 1.12.2 pack.mcmeta (Format 3 is for 1.11 - 1.12.2)
           const mcmeta = {
               "pack": {
                   "pack_format": 3,
@@ -793,15 +830,12 @@
           };
           zip.file("pack.mcmeta", JSON.stringify(mcmeta, null, 2));
 
-          // 2. Create the Minecraft folder structure
           const blockFolder = zip.folder("assets").folder("minecraft").folder("textures").folder("blocks");
           const itemFolder = zip.folder("assets").folder("minecraft").folder("textures").folder("items");
 
-          // 3. Drop a quick README inside so you know exactly where to put your images after extraction
           blockFolder.file("block_textures_readme.txt", "Drop your backported 1.20 .PNG files exactly in this folder!");
           itemFolder.file("item_textures_readme.txt", "Drop your custom item .PNG files exactly in this folder!");
 
-          // 4. Generate and trigger browser download
           zip.generateAsync({type:"blob"}).then(function(content) {
               const link = document.createElement('a');
               link.href = URL.createObjectURL(content);
