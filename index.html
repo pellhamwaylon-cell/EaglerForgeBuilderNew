@@ -29,7 +29,6 @@
         overflow: hidden;
       }
 
-      /* Top Toolbar */
       #toolbar {
         background-color: var(--nav-bg);
         padding: 10px 20px;
@@ -50,7 +49,6 @@
         transition: color 0.3s ease;
       }
 
-      /* Mode Switcher Styles */
       .mode-toggle {
         display: flex;
         background: #111;
@@ -79,7 +77,6 @@
         color: white;
       }
 
-      /* Action Buttons */
       button.action-btn {
         background-color: #444;
         color: white;
@@ -95,20 +92,14 @@
         background-color: #555;
       }
 
-      #run-btn {
-        background-color: #5ba55b;
-      }
-      #run-btn:hover {
-        background-color: #4c8f4c;
-      }
+      #run-btn { background-color: #5ba55b; }
+      #run-btn:hover { background-color: #4c8f4c; }
 
       #export-jar-btn {
         display: none; 
         background-color: var(--accent-server);
       }
-      #export-jar-btn:hover {
-        background-color: #d35400;
-      }
+      #export-jar-btn:hover { background-color: #d35400; }
 
       select {
         padding: 6px;
@@ -118,7 +109,6 @@
         border: 1px solid #555;
       }
 
-      /* Main Layout */
       #main-workspace {
         display: flex;
         flex: 1;
@@ -149,7 +139,6 @@
         overflow-y: auto;
       }
 
-      /* 3D Modeler Section */
       #modeler-container {
         width: 100%;
         height: 250px;
@@ -225,9 +214,7 @@
         border-left: 4px solid var(--current-accent);
       }
 
-      .datablock h4 {
-        margin: 0 0 5px 0;
-      }
+      .datablock h4 { margin: 0 0 5px 0; }
     </style>
 
     <script src="./libs/blockly/blockly_compressed.js"></script>
@@ -253,9 +240,7 @@
       </category>
 
       <category name="Loops" colour="#5ba55b">
-        <block type="controls_repeat_ext">
-          <value name="TIMES"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
-        </block>
+        <block type="controls_repeat_ext"><value name="TIMES"><shadow type="math_number"><field name="NUM">10</field></shadow></value></block>
         <block type="controls_whileUntil"><field name="MODE">WHILE</field></block>
         <block type="controls_for">
           <field name="VAR" id=":ajQQC^!][(eT3;33w[k">i</field>
@@ -340,7 +325,8 @@
         <block type="events_onJoinWorld"></block>
         <block type="events_onClientTick"></block>
         <block type="events_onClientFrame"></block>
-        <block type="events_onItemRender"></block> </category>
+        <block type="events_onItemRender"></block> 
+      </category>
       
       <sep></sep>
       <category name="Variables" colour="#a55b80" custom="VARIABLE"></category>
@@ -405,6 +391,80 @@
         <block type="itemstack_setrepaircost"></block>
       </category>
       
+      <category name="Dimensions (H)" colour="#2c3e50">
+        <block type="handle_DimensionConstructor"></block>
+        <block type="handle_PortalBlockCollide"></block>
+        <block type="handle_ChunkGenerate"></block>
+      </category>
+      
+      <category name="Dimensions (C)" colour="#2c3e50">
+        <block type="dimension_register_new">
+          <value name="DIM_ID"><shadow type="math_number"><field name="NUM">2</field></shadow></value>
+          <value name="DIM_NAME"><shadow type="text"><field name="TEXT">The Wasteland</field></shadow></value>
+        </block>
+        <block type="dimension_teleport_entity">
+          <value name="ENTITY"><block type="local_this"></block></value>
+          <value name="TARGET_DIM"><shadow type="math_number"><field name="NUM">2</field></shadow></value>
+        </block>
+        <block type="dimension_set_repetitive_gen">
+          <field name="BIOME_TYPE">PLAINS</field>
+          <field name="FLAT_GENERATION">TRUE</field>
+        </block>
+        <block type="dimension_set_sky_color">
+          <value name="COLOR_HEX"><shadow type="text"><field name="TEXT">#550000</field></shadow></value>
+        </block>
+        <block type="dimension_create_return_portal">
+          <value name="POS"><block type="blockpos_getxyz"></block></value>
+          <value name="TARGET_DIM"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+        </block>
+      </category>
+
+      <category name="Sound & Media" colour="#f1c40f">
+        <block type="sound_register_custom">
+          <value name="SOUND_ID"><shadow type="text"><field name="TEXT">mod.custom.roar</field></shadow></value>
+          <value name="FILE_NAME"><shadow type="text"><field name="TEXT">roar.ogg</field></shadow></value>
+        </block>
+        <block type="sound_play_at_pos">
+          <value name="SOUND_NAME"><shadow type="text"><field name="TEXT">mod.custom.roar</field></shadow></value>
+          <value name="POS"><block type="blockpos_getxyz"></block></value>
+          <value name="VOLUME"><shadow type="math_number"><field name="NUM">1.0</field></shadow></value>
+          <value name="PITCH"><shadow type="math_number"><field name="NUM">1.0</field></shadow></value>
+        </block>
+        <block type="sound_play_to_player">
+          <value name="PLAYER"><block type="local_this"></block></value>
+          <value name="SOUND_NAME"><shadow type="text"><field name="TEXT">random.levelup</field></shadow></value>
+        </block>
+        <block type="sound_stop_all"></block>
+      </category>
+
+      <category name="Advanced Entities" colour="#f39c12">
+        <block type="entity_register_custom">
+          <value name="ENTITY_ID"><shadow type="text"><field name="TEXT">mod:custom_zombie</field></shadow></value>
+        </block>
+        <block type="entity_spawn_multiple">
+          <value name="ENTITY_TYPE"><shadow type="text"><field name="TEXT">Zombie</field></shadow></value>
+          <value name="AMOUNT"><shadow type="math_number"><field name="NUM">5</field></shadow></value>
+          <value name="POS"><block type="blockpos_getxyz"></block></value>
+        </block>
+        <block type="entity_set_ai_target">
+          <value name="ENTITY"><block type="local_this"></block></value>
+          <value name="TARGET"><block type="world_get_player_by_name"></block></value>
+        </block>
+        <block type="entity_set_max_health">
+          <value name="ENTITY"><block type="local_this"></block></value>
+          <value name="HEALTH"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
+        </block>
+        <block type="entity_set_movement_speed">
+          <value name="ENTITY"><block type="local_this"></block></value>
+          <value name="SPEED"><shadow type="math_number"><field name="NUM">0.5</field></shadow></value>
+        </block>
+        <block type="entity_add_potion_effect">
+          <field name="EFFECT">SPEED</field>
+          <value name="DURATION"><shadow type="math_number"><field name="NUM">200</field></shadow></value>
+          <value name="AMPLIFIER"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+        </block>
+      </category>
+
       <category name="Models & Textures" colour="#9b59b6">
         <block type="render_override_item_model">
           <value name="ITEM"><block type="items_item"></block></value>
@@ -451,8 +511,9 @@
           <value name="SPEED"><shadow type="math_number"><field name="NUM">3.0</field></shadow></value>
         </block>
         <block type="combat_on_entity_hit">
-          </block>
+        </block>
       </category>
+
       <category name="SharedAttributes (C)" colour="#fcba03">
         <block type="attributes_set"></block>
       </category>
@@ -584,7 +645,7 @@
         <div id="propnav" style="font-weight: bold; margin-bottom: 15px;">Properties</div>
         
         <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
-          <select id="addtype" style="flex: 1;"></select>
+          <select id="addtype"></select>
           <button class="action-btn" id="newdatablock">New</button>
         </div>
 
@@ -605,6 +666,50 @@
 
     <script src="block_libmap.js"></script>
     <script src="libs/upatch.js"></script>
+    <script src="libs/item_selector.js"></script>
+    <script src="libs/handler_register.js"></script>
+
+    <script src="blocks/World.js"></script>
+    <script src="blocks/Commands.js"></script>
+    <script src="blocks/CraftingRecipe.js"></script>
+    <script src="blocks/SharedAttributes.js"></script>
+    <script src="blocks/ItemStack.js"></script>
+    <script src="blocks/Blocks.js"></script>
+    <script src="blocks/Items.js"></script>
+    <script src="blocks/Entity.js"></script>
+    <script src="blocks/Player.js"></script>
+    <script src="blocks/Vec3.js"></script>
+    <script src="blocks/BlockPos.js"></script>
+    <script src="blocks/Debug.js"></script>
+    <script src="blocks/Events.js"></script>
+    <script src="blocks/ReturnBlock.js"></script>
+    <script src="blocks/ActionResult.js"></script>
+    <script src="blocks/Utils.js"></script>
+    
+    <script src="blocks/Dimensions.js"></script>
+    <script src="blocks/Media.js"></script>
+    <script src="blocks/AdvancedEntities.js"></script>
+    <script src="blocks/Models.js"></script>
+    <script src="blocks/Animations.js"></script>
+    <script src="blocks/Projectiles.js"></script>
+
+    <script src="types.js"></script>
+    <script src="primitives/Inspector.js"></script>
+    <script src="primitives/Metadata.js"></script>
+    <script src="primitives/Icon.js"></script>
+    <script src="primitives/OreGeneration.js"></script>
+    <script src="primitives/AdvancedBlock.js"></script>
+    <script src="primitives/Item.js"></script>
+    <script src="primitives/Command.js"></script>
+    <script src="primitives/CraftingRecipe.js"></script>
+    <script src="primitives/FurnaceRecipe.js"></script>
+
+    <script src="functions.js"></script>
+    <script src="propviewer.js"></script>
+    <script src="index.js"></script>
+    <script src="serialise.js"></script>
+    <script src="compiler.js"></script>
+
     <script>
       function switchMode(mode) {
         const root = document.documentElement;
