@@ -3,17 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EaglerForge Builder</title>
+    <title>EaglerForge & Server Builder</title>
     <link rel="stylesheet" href="stylesheet.css" />
 
-    <!-- Modern UI Styling to look like Scratch/Code.org -->
     <style>
       :root {
         --bg-dark: #1e1e1e;
         --nav-bg: #2d2d2d;
         --text-light: #f5f5f5;
-        --accent: #4a90e2;
+        --accent-client: #4a90e2; 
+        --accent-server: #e67e22; 
         --panel-bg: #252526;
+        --current-accent: var(--accent-client); 
       }
       
       body, html {
@@ -37,17 +38,50 @@
         gap: 15px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         z-index: 10;
+        border-bottom: 3px solid var(--current-accent);
+        transition: border-bottom 0.3s ease;
       }
 
       #toolbar h1 {
         margin: 0;
         font-size: 1.2rem;
-        margin-right: auto;
-        color: var(--accent);
+        margin-right: 15px;
+        color: var(--current-accent);
+        transition: color 0.3s ease;
       }
 
-      button {
-        background-color: var(--accent);
+      /* Mode Switcher Styles */
+      .mode-toggle {
+        display: flex;
+        background: #111;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-right: auto;
+      }
+
+      .mode-btn {
+        background: transparent;
+        color: #888;
+        padding: 6px 15px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+      }
+
+      .mode-btn.active-client {
+        background: var(--accent-client);
+        color: white;
+      }
+
+      .mode-btn.active-server {
+        background: var(--accent-server);
+        color: white;
+      }
+
+      /* Action Buttons */
+      button.action-btn {
+        background-color: #444;
         color: white;
         border: none;
         padding: 8px 16px;
@@ -57,8 +91,23 @@
         transition: background 0.2s;
       }
 
-      button:hover {
-        background-color: #357abd;
+      button.action-btn:hover {
+        background-color: #555;
+      }
+
+      #run-btn {
+        background-color: #5ba55b;
+      }
+      #run-btn:hover {
+        background-color: #4c8f4c;
+      }
+
+      #export-jar-btn {
+        display: none; 
+        background-color: var(--accent-server);
+      }
+      #export-jar-btn:hover {
+        background-color: #d35400;
       }
 
       select {
@@ -76,7 +125,6 @@
         height: calc(100vh - 60px);
       }
 
-      /* Blockly Editor Area */
       #blockly-container {
         flex: 3;
         position: relative;
@@ -91,9 +139,8 @@
         height: 100%;
       }
 
-      /* Right Properties Panel */
       #right-panel {
-        flex: 1;
+        flex: 1.2;
         background-color: var(--panel-bg);
         border-left: 2px solid #333;
         padding: 20px;
@@ -102,11 +149,63 @@
         overflow-y: auto;
       }
 
+      /* 3D Modeler Section */
+      #modeler-container {
+        width: 100%;
+        height: 250px;
+        background: #111;
+        border-radius: 8px;
+        border: 1px solid #444;
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      #modeler-header {
+        background: #333;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      #modeler-canvas {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        font-style: italic;
+      }
+
+      #modeler-controls {
+        background: #222;
+        padding: 5px;
+        display: flex;
+        gap: 5px;
+        justify-content: center;
+      }
+      
+      .tool-btn {
+        background: #444;
+        border: none;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 0.7rem;
+        cursor: pointer;
+      }
+      .tool-btn:hover { background: #555; }
+
       #datablock_container {
         margin-top: 15px;
         display: flex;
         flex-direction: column;
         gap: 10px;
+        flex: 1;
       }
 
       #search {
@@ -123,7 +222,7 @@
         background: #333;
         padding: 15px;
         border-radius: 6px;
-        border-left: 4px solid var(--accent);
+        border-left: 4px solid var(--current-accent);
       }
 
       .datablock h4 {
@@ -131,7 +230,6 @@
       }
     </style>
 
-    <!-- Load Core Libraries -->
     <script src="./libs/blockly/blockly_compressed.js"></script>
     <script src="./libs/blockly/blocks_compressed.js"></script>
     <script src="./libs/blockly/javascript_compressed.js"></script>
@@ -142,12 +240,7 @@
     <script src="./libs/blockly/blockly_patch.js"></script>
     <script src="./libs/blockly/blockly_minecraft_item_selector.js"></script>
 
-    <!-- ========================================== -->
-    <!-- TOOLBOX XML: PASTE NEW BLOCK GROUPS HERE   -->
-    <!-- ========================================== -->
     <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
-      
-      <!-- Logic -->
       <category name="Logic" colour="#5b80a5">
         <block type="controls_if"></block>
         <block type="logic_compare"><field name="OP">EQ</field></block>
@@ -159,7 +252,6 @@
         <block type="logic_ternary"></block>
       </category>
 
-      <!-- Loops -->
       <category name="Loops" colour="#5ba55b">
         <block type="controls_repeat_ext">
           <value name="TIMES"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
@@ -177,7 +269,6 @@
         <block type="proc_asyncrun"><value name="DELAY"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
       </category>
 
-      <!-- Math -->
       <category name="Math" colour="#5b67a5">
         <block type="math_number"><field name="NUM">0</field></block>
         <block type="math_arithmetic">
@@ -207,7 +298,6 @@
         <block type="math_random_float"></block>
       </category>
 
-      <!-- Text -->
       <category name="Text" colour="#5ba58c">
         <block type="text"><field name="TEXT"></field></block>
         <block type="text_join"><mutation items="2"></mutation></block>
@@ -223,7 +313,6 @@
         <block type="text_print"><value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block>
       </category>
 
-      <!-- Lists -->
       <category name="Lists" colour="#745ba5">
         <block type="lists_create_with"><mutation items="0"></mutation></block>
         <block type="lists_create_with"><mutation items="3"></mutation></block>
@@ -240,7 +329,6 @@
 
       <sep></sep>
       
-      <!-- Core Logic & Variables -->
       <category name="Return" colour="#008855">
         <block type="local_this"> </block>
         <block type="proc_return"> </block>
@@ -252,7 +340,7 @@
         <block type="events_onJoinWorld"></block>
         <block type="events_onClientTick"></block>
         <block type="events_onClientFrame"></block>
-      </category>
+        <block type="events_onItemRender"></block> </category>
       
       <sep></sep>
       <category name="Variables" colour="#a55b80" custom="VARIABLE"></category>
@@ -265,7 +353,6 @@
       <category name="Functions" colour="#995ba5" custom="PROCEDURE"></category>
       <sep></sep>
 
-      <!-- Eaglercraft Modding Specifics -->
       <category name="Blocks (H)" colour="#dd11dd">
         <block type="handle_BlockConstructor"></block>
         <block type="handle_BlockBreak"></block>
@@ -316,6 +403,55 @@
         <block type="itemstack_enchant"></block>
         <block type="itemstack_repaircost"></block>
         <block type="itemstack_setrepaircost"></block>
+      </category>
+      
+      <category name="Models & Textures" colour="#9b59b6">
+        <block type="render_override_item_model">
+          <value name="ITEM"><block type="items_item"></block></value>
+          <value name="MODEL_JSON"><shadow type="text"><field name="TEXT">{"parent": "item/handheld", ...}</field></shadow></value>
+        </block>
+        <block type="render_set_custom_texture">
+          <value name="ITEM_OR_BLOCK"><block type="local_this"></block></value>
+          <value name="TEXTURE_URL_OR_BASE64"><shadow type="text"><field name="TEXT">data:image/png;base64,...</field></shadow></value>
+        </block>
+        <block type="render_set_entity_model">
+          <value name="ENTITY_TYPE"><shadow type="text"><field name="TEXT">mod:custom_zombie</field></shadow></value>
+          <value name="MODEL_DATA"><shadow type="text"><field name="TEXT">[GeckoLib/Blockbench Data]</field></shadow></value>
+        </block>
+      </category>
+
+      <category name="Animations (Keyframes)" colour="#3498db">
+        <block type="anim_translate_arm">
+          <value name="X"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+          <value name="Y"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+          <value name="Z"><shadow type="math_number"><field name="NUM">-0.5</field></shadow></value>
+          <value name="DURATION_TICKS"><shadow type="math_number"><field name="NUM">5</field></shadow></value>
+        </block>
+        <block type="anim_rotate_arm">
+          <value name="PITCH"><shadow type="math_number"><field name="NUM">15</field></shadow></value>
+          <value name="YAW"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+          <value name="ROLL"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+        </block>
+        <block type="anim_apply_recoil">
+          <value name="INTENSITY"><shadow type="math_number"><field name="NUM">2.0</field></shadow></value>
+        </block>
+        <block type="anim_play_entity_animation">
+          <value name="ENTITY"><block type="local_this"></block></value>
+          <value name="ANIM_NAME"><shadow type="text"><field name="TEXT">animation.gun.reload</field></shadow></value>
+        </block>
+      </category>
+
+      <category name="Projectiles & Hitscan" colour="#e74c3c">
+        <block type="combat_fire_hitscan">
+          <value name="DAMAGE"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
+          <value name="RANGE"><shadow type="math_number"><field name="NUM">50</field></shadow></value>
+        </block>
+        <block type="combat_spawn_projectile">
+          <value name="TYPE"><shadow type="text"><field name="TEXT">Arrow</field></shadow></value>
+          <value name="SPEED"><shadow type="math_number"><field name="NUM">3.0</field></shadow></value>
+        </block>
+        <block type="combat_on_entity_hit">
+          </block>
       </category>
       <category name="SharedAttributes (C)" colour="#fcba03">
         <block type="attributes_set"></block>
@@ -398,49 +534,68 @@
   </head>
 
   <body>
-    <!-- Top Navbar -->
     <div id="toolbar">
-      <h1>EaglerForge Builder</h1>
-      <button id="load">Load</button>
-      <button id="save">Save</button>
-      <button id="export">Export</button>
-      <button id="run" style="background-color: #5ba55b;">Run Code</button>
+      <h1 id="app-title">Builder</h1>
+      
+      <div class="mode-toggle">
+        <button id="mode-client" class="mode-btn active-client" onclick="switchMode('client')">Client (EaglerForge)</button>
+        <button id="mode-server" class="mode-btn" onclick="switchMode('server')">Server (Spigot .jar)</button>
+      </div>
+
+      <button class="action-btn" id="load">Load</button>
+      <button class="action-btn" id="save">Save</button>
+      <button class="action-btn" id="export">Export JS</button>
+      <button class="action-btn" id="export-jar-btn">Compile to .JAR</button>
+      <button class="action-btn" id="run-btn">Run Code</button>
       
       <div style="margin-left: 20px;">
         <label for="compiler_target">Target: </label>
         <select id="compiler_target">
-          <option value="1_8">Minecraft 1.8.x</option>
-          <option value="1_12">Minecraft 1.12.x</option>
+          <option value="1_8">1.8.x</option>
+          <option value="1_12">1.12.x</option>
         </select>
       </div>
     </div>
 
-    <!-- Main Workspace Area -->
     <div id="main-workspace">
       
-      <!-- Left: Blockly Canvas -->
       <div id="blockly-container">
         <div id="blockly"></div>
       </div>
 
-      <!-- Right: Properties & DataBlocks -->
       <div id="right-panel">
+        
+        <div id="modeler-container">
+          <div id="modeler-header">
+            <span>3D Asset & Animation Viewer</span>
+            <button class="tool-btn" onclick="alert('Launch full screen modeler')">Expand</button>
+          </div>
+          <div id="modeler-canvas">
+            [ WebGL / Blockbench Embed ]<br>
+          </div>
+          <div id="modeler-controls">
+            <button class="tool-btn">Anim: Recoil</button>
+            <button class="tool-btn">Anim: Reload</button>
+            <button class="tool-btn">Import Texture</button>
+            <button class="tool-btn">Import .JSON Model</button>
+          </div>
+        </div>
+
         <div id="propnav" style="font-weight: bold; margin-bottom: 15px;">Properties</div>
         
         <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
           <select id="addtype" style="flex: 1;"></select>
-          <button id="newdatablock">New</button>
+          <button class="action-btn" id="newdatablock">New</button>
         </div>
 
         <div id="datablock_container">
           <input id="search" type="search" placeholder="Search blocks..." />
           
-          <!-- Example DataBlock Item -->
           <div class="datablock selected">
-            <h4>Dirt Block</h4>
-            <i style="color: #aaa; font-size: 0.9rem;">Type: Block</i>
+            <h4>M16 Assault Rifle</h4>
+            <i style="color: #aaa; font-size: 0.9rem;">Type: Custom Item (Gun)</i>
             <div style="margin-top: 10px;">
-              <button style="background: #e74c3c; font-size: 0.8rem; padding: 4px 8px;">Delete</button>
+              <button style="background: #e74c3c; border:none; color:white; font-size: 0.8rem; padding: 4px 8px; border-radius:3px; cursor:pointer;">Delete</button>
             </div>
           </div>
 
@@ -448,52 +603,41 @@
       </div>
     </div>
 
-    <!-- Core Script Loading (Unchanged) -->
     <script src="block_libmap.js"></script>
     <script src="libs/upatch.js"></script>
-    <script src="libs/item_selector.js"></script>
-    <script src="libs/handler_register.js"></script>
-
-    <script src="blocks/World.js"></script>
-    <script src="blocks/Commands.js"></script>
-    <script src="blocks/CraftingRecipe.js"></script>
-    <script src="blocks/SharedAttributes.js"></script>
-    <script src="blocks/ItemStack.js"></script>
-    <script src="blocks/Blocks.js"></script>
-    <script src="blocks/Items.js"></script>
-    <script src="blocks/Entity.js"></script>
-    <script src="blocks/Player.js"></script>
-    <script src="blocks/Vec3.js"></script>
-    <script src="blocks/BlockPos.js"></script>
-    <script src="blocks/Debug.js"></script>
-    <script src="blocks/Events.js"></script>
-    <script src="blocks/ReturnBlock.js"></script>
-    <script src="blocks/ActionResult.js"></script>
-    <script src="blocks/Utils.js"></script>
-
-    <script src="types.js"></script>
-    <script src="primitives/Inspector.js"></script>
-    <script src="primitives/Metadata.js"></script>
-    <script src="primitives/Icon.js"></script>
-    <script src="primitives/OreGeneration.js"></script>
-    <script src="primitives/AdvancedBlock.js"></script>
-    <script src="primitives/Item.js"></script>
-    <script src="primitives/Command.js"></script>
-    <script src="primitives/CraftingRecipe.js"></script>
-    <script src="primitives/FurnaceRecipe.js"></script>
-
-    <script src="functions.js"></script>
-    <script src="propviewer.js"></script>
-    <script src="index.js"></script>
-    <script src="serialise.js"></script>
-    <script src="compiler.js"></script>
-
-    <!-- Custom Button Logic -->
     <script>
+      function switchMode(mode) {
+        const root = document.documentElement;
+        const btnClient = document.getElementById('mode-client');
+        const btnServer = document.getElementById('mode-server');
+        const title = document.getElementById('app-title');
+        const exportJsBtn = document.getElementById('export');
+        const exportJarBtn = document.getElementById('export-jar-btn');
+
+        if (mode === 'client') {
+          root.style.setProperty('--current-accent', 'var(--accent-client)');
+          btnClient.classList.add('active-client');
+          btnServer.classList.remove('active-server');
+          title.innerText = "EaglerForge Builder";
+          
+          exportJsBtn.style.display = 'inline-block';
+          exportJarBtn.style.display = 'none';
+
+        } else if (mode === 'server') {
+          root.style.setProperty('--current-accent', 'var(--accent-server)');
+          btnServer.classList.add('active-server');
+          btnClient.classList.remove('active-client');
+          title.innerText = "Server Plugin Builder";
+
+          exportJsBtn.style.display = 'none';
+          exportJarBtn.style.display = 'inline-block';
+        }
+      }
+      
       function playerHelpButton() {
         alert("Players are entities, by consequence all the blocks for entities also work for players, but not the contrary.");
       }
-      // Added a slight delay to ensure Blockly is fully loaded before registering the callback
+      
       window.onload = function() {
         if(Blockly && Blockly.getMainWorkspace()) {
             Blockly.getMainWorkspace().registerButtonCallback("playerHelpButton", playerHelpButton);
