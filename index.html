@@ -3,400 +3,257 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EaglerForgeBuilderNew</title>
+    <title>EaglerForge Builder</title>
     <link rel="stylesheet" href="stylesheet.css" />
 
-    <!-- Load Blockly core -->
+    <!-- Modern UI Styling to look like Scratch/Code.org -->
+    <style>
+      :root {
+        --bg-dark: #1e1e1e;
+        --nav-bg: #2d2d2d;
+        --text-light: #f5f5f5;
+        --accent: #4a90e2;
+        --panel-bg: #252526;
+      }
+      
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* Top Toolbar */
+      #toolbar {
+        background-color: var(--nav-bg);
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        z-index: 10;
+      }
+
+      #toolbar h1 {
+        margin: 0;
+        font-size: 1.2rem;
+        margin-right: auto;
+        color: var(--accent);
+      }
+
+      button {
+        background-color: var(--accent);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background-color: #357abd;
+      }
+
+      select {
+        padding: 6px;
+        border-radius: 4px;
+        background: #333;
+        color: white;
+        border: 1px solid #555;
+      }
+
+      /* Main Layout */
+      #main-workspace {
+        display: flex;
+        flex: 1;
+        height: calc(100vh - 60px);
+      }
+
+      /* Blockly Editor Area */
+      #blockly-container {
+        flex: 3;
+        position: relative;
+        background-color: darkslategrey;
+      }
+
+      #blockly {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Right Properties Panel */
+      #right-panel {
+        flex: 1;
+        background-color: var(--panel-bg);
+        border-left: 2px solid #333;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+
+      #datablock_container {
+        margin-top: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      #search {
+        width: 100%;
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #555;
+        background: #333;
+        color: white;
+        box-sizing: border-box;
+      }
+
+      .datablock {
+        background: #333;
+        padding: 15px;
+        border-radius: 6px;
+        border-left: 4px solid var(--accent);
+      }
+
+      .datablock h4 {
+        margin: 0 0 5px 0;
+      }
+    </style>
+
+    <!-- Load Core Libraries -->
     <script src="./libs/blockly/blockly_compressed.js"></script>
-
-    <!-- Load the default blocks -->
     <script src="./libs/blockly/blocks_compressed.js"></script>
-
-    <!-- Load a generator -->
     <script src="./libs/blockly/javascript_compressed.js"></script>
-
-    <!-- Load a message file -->
     <script src="./libs/blockly/en.js"></script>
-
-    <!-- Load eruda console -->
     <script src="https://cdn.jsdelivr.net/npm/eruda" onload="eruda.init()"></script>
-
-    <!-- Load dark mode -->
     <script src="./libs/blockly/darktheme.js"></script>
-
-    <!-- Load blockly dev tools -->
     <script src="./libs/blockly/blockly_dev_tools.js"></script>
-
-    <!-- Load handler argument patch -->
     <script src="./libs/blockly/blockly_patch.js"></script>
-
-    <!-- Load item and block selector patch -->
     <script src="./libs/blockly/blockly_minecraft_item_selector.js"></script>
 
-    <xml
-      xmlns="https://developers.google.com/blockly/xml"
-      id="toolbox"
-      style="display: none"
-    >
+    <!-- ========================================== -->
+    <!-- TOOLBOX XML: PASTE NEW BLOCK GROUPS HERE   -->
+    <!-- ========================================== -->
+    <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
+      
+      <!-- Logic -->
       <category name="Logic" colour="#5b80a5">
         <block type="controls_if"></block>
-        <block type="logic_compare">
-          <field name="OP">EQ</field>
-        </block>
-        <block type="logic_operation">
-          <field name="OP">AND</field>
-        </block>
+        <block type="logic_compare"><field name="OP">EQ</field></block>
+        <block type="logic_operation"><field name="OP">AND</field></block>
         <block type="logic_negate"></block>
-        <block type="logic_boolean">
-          <field name="BOOL">TRUE</field>
-        </block>
+        <block type="logic_boolean"><field name="BOOL">TRUE</field></block>
         <block type="logic_null"></block>
         <block type="logic_a_or_b"></block>
         <block type="logic_ternary"></block>
       </category>
+
+      <!-- Loops -->
       <category name="Loops" colour="#5ba55b">
         <block type="controls_repeat_ext">
-          <value name="TIMES">
-            <shadow type="math_number">
-              <field name="NUM">10</field>
-            </shadow>
-          </value>
+          <value name="TIMES"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
         </block>
-        <block type="controls_whileUntil">
-          <field name="MODE">WHILE</field>
-        </block>
+        <block type="controls_whileUntil"><field name="MODE">WHILE</field></block>
         <block type="controls_for">
           <field name="VAR" id=":ajQQC^!][(eT3;33w[k">i</field>
-          <value name="FROM">
-            <shadow type="math_number">
-              <field name="NUM">1</field>
-            </shadow>
-          </value>
-          <value name="TO">
-            <shadow type="math_number">
-              <field name="NUM">10</field>
-            </shadow>
-          </value>
-          <value name="BY">
-            <shadow type="math_number">
-              <field name="NUM">1</field>
-            </shadow>
-          </value>
+          <value name="FROM"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+          <value name="TO"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
+          <value name="BY"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
         </block>
-        <block type="controls_forEach">
-          <field name="VAR" id="w.NtRHu,vLo5uAjge%7?">j</field>
-        </block>
-        <block type="controls_flow_statements">
-          <field name="FLOW">BREAK</field>
-        </block>
-        <block type="proc_wait">
-          <value name="VALUE">
-            <shadow type="math_number">
-              <field name="NUM">1</field>
-            </shadow>
-          </value>
-        </block>
-        <block type="proc_asyncrun">
-          <value name="DELAY">
-            <shadow type="math_number">
-              <field name="NUM">1</field>
-            </shadow>
-          </value>
-        </block>
+        <block type="controls_forEach"><field name="VAR" id="w.NtRHu,vLo5uAjge%7?">j</field></block>
+        <block type="controls_flow_statements"><field name="FLOW">BREAK</field></block>
+        <block type="proc_wait"><value name="VALUE"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
+        <block type="proc_asyncrun"><value name="DELAY"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
       </category>
+
+      <!-- Math -->
       <category name="Math" colour="#5b67a5">
-        <block type="math_number">
-          <field name="NUM">0</field>
-        </block>
+        <block type="math_number"><field name="NUM">0</field></block>
         <block type="math_arithmetic">
           <field name="OP">ADD</field>
-          <value name="A">
-            <shadow type="math_number">
-              <field name="NUM">1</field>
-            </shadow>
-          </value>
-          <value name="B">
-            <shadow type="math_number">
-              <field name="NUM">1</field>
-            </shadow>
-          </value>
+          <value name="A"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+          <value name="B"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
         </block>
-        <block type="math_single">
-          <field name="OP">ROOT</field>
-          <value name="NUM">
-            <shadow type="math_number">
-              <field name="NUM">9</field>
-            </shadow>
-          </value>
-        </block>
-        <block type="math_trig">
-          <field name="OP">SIN</field>
-          <value name="NUM">
-            <shadow type="math_number">
-              <field name="NUM">45</field>
-            </shadow>
-          </value>
-        </block>
-        <block type="math_constant">
-          <field name="CONSTANT">PI</field>
-        </block>
-        <block type="math_number_property">
-          <mutation divisor_input="false"></mutation>
-          <field name="PROPERTY">EVEN</field>
-          <value name="NUMBER_TO_CHECK">
-            <shadow type="math_number">
-              <field name="NUM">0</field>
-            </shadow>
-          </value>
-        </block>
-        <block type="math_round">
-          <field name="OP">ROUND</field>
-          <value name="NUM">
-            <shadow type="math_number">
-              <field name="NUM">3.1</field>
-            </shadow>
-          </value>
-        </block>
-        <block type="math_on_list">
-          <mutation op="SUM"></mutation>
-          <field name="OP">SUM</field>
-        </block>
+        <block type="math_single"><field name="OP">ROOT</field><value name="NUM"><shadow type="math_number"><field name="NUM">9</field></shadow></value></block>
+        <block type="math_trig"><field name="OP">SIN</field><value name="NUM"><shadow type="math_number"><field name="NUM">45</field></shadow></value></block>
+        <block type="math_constant"><field name="CONSTANT">PI</field></block>
+        <block type="math_number_property"><field name="PROPERTY">EVEN</field><value name="NUMBER_TO_CHECK"><shadow type="math_number"><field name="NUM">0</field></shadow></value></block>
+        <block type="math_round"><field name="OP">ROUND</field><value name="NUM"><shadow type="math_number"><field name="NUM">3.1</field></shadow></value></block>
+        <block type="math_on_list"><field name="OP">SUM</field></block>
         <block type="math_modulo">
-          <value name="DIVIDEND">
-            <shadow type="math_number">
-              <field name="NUM">64</field>
-            </shadow>
-          </value>
-          <value name="DIVISOR">
-            <shadow type="math_number">
-              <field name="NUM">10</field>
-            </shadow>
-          </value>
+          <value name="DIVIDEND"><shadow type="math_number"><field name="NUM">64</field></shadow></value>
+          <value name="DIVISOR"><shadow type="math_number"><field name="NUM">10</field></shadow></value>
         </block>
         <block type="math_constrain">
-          <value name="VALUE">
-            <shadow type="math_number">
-              <field name="NUM">50</field>
-            </shadow>
-          </value>
-          <value name="LOW">
-            <shadow type="math_number">
-              <field name="NUM">1</field>
-            </shadow>
-          </value>
-          <value name="HIGH">
-            <shadow type="math_number">
-              <field name="NUM">100</field>
-            </shadow>
-          </value>
+          <value name="VALUE"><shadow type="math_number"><field name="NUM">50</field></shadow></value>
+          <value name="LOW"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+          <value name="HIGH"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
         </block>
         <block type="math_random_int">
-          <value name="FROM">
-            <shadow type="math_number">
-              <field name="NUM">1</field>
-            </shadow>
-          </value>
-          <value name="TO">
-            <shadow type="math_number">
-              <field name="NUM">100</field>
-            </shadow>
-          </value>
+          <value name="FROM"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+          <value name="TO"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
         </block>
         <block type="math_random_float"></block>
       </category>
+
+      <!-- Text -->
       <category name="Text" colour="#5ba58c">
-        <block type="text">
-          <field name="TEXT"></field>
-        </block>
-        <block type="text_join">
-          <mutation items="2"></mutation>
-        </block>
-        <block type="text_append">
-          <field name="VAR" id="o4A872,H8svB|p9?`+~v">item</field>
-          <value name="TEXT">
-            <shadow type="text">
-              <field name="TEXT"></field>
-            </shadow>
-          </value>
-        </block>
-        <block type="text_length">
-          <value name="VALUE">
-            <shadow type="text">
-              <field name="TEXT">abc</field>
-            </shadow>
-          </value>
-        </block>
-        <block type="text_isEmpty">
-          <value name="VALUE">
-            <shadow type="text">
-              <field name="TEXT"></field>
-            </shadow>
-          </value>
-        </block>
-        <block type="text_indexOf">
-          <field name="END">FIRST</field>
-          <value name="VALUE">
-            <block type="variables_get">
-              <field name="VAR" id="2M)8,;1:WvaP#5-8/k9)">text</field>
-            </block>
-          </value>
-          <value name="FIND">
-            <shadow type="text">
-              <field name="TEXT">abc</field>
-            </shadow>
-          </value>
-        </block>
-        <block type="text_charAt">
-          <mutation at="true"></mutation>
-          <field name="WHERE">FROM_START</field>
-          <value name="VALUE">
-            <block type="variables_get">
-              <field name="VAR" id="2M)8,;1:WvaP#5-8/k9)">text</field>
-            </block>
-          </value>
-        </block>
-        <block type="text_getSubstring">
-          <mutation at1="true" at2="true"></mutation>
-          <field name="WHERE1">FROM_START</field>
-          <field name="WHERE2">FROM_START</field>
-          <value name="STRING">
-            <block type="variables_get">
-              <field name="VAR" id="2M)8,;1:WvaP#5-8/k9)">text</field>
-            </block>
-          </value>
-        </block>
-        <block type="text_changeCase">
-          <field name="CASE">UPPERCASE</field>
-          <value name="TEXT">
-            <shadow type="text">
-              <field name="TEXT">abc</field>
-            </shadow>
-          </value>
-        </block>
-        <block type="text_trim">
-          <field name="MODE">BOTH</field>
-          <value name="TEXT">
-            <shadow type="text">
-              <field name="TEXT">abc</field>
-            </shadow>
-          </value>
-        </block>
-        <block type="comment">
-        </block>
-        <block type="text_print">
-          <value name="TEXT">
-            <shadow type="text">
-              <field name="TEXT">abc</field>
-            </shadow>
-          </value>
-        </block>
+        <block type="text"><field name="TEXT"></field></block>
+        <block type="text_join"><mutation items="2"></mutation></block>
+        <block type="text_append"><field name="VAR">item</field><value name="TEXT"><shadow type="text"><field name="TEXT"></field></shadow></value></block>
+        <block type="text_length"><value name="VALUE"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block>
+        <block type="text_isEmpty"><value name="VALUE"><shadow type="text"><field name="TEXT"></field></shadow></value></block>
+        <block type="text_indexOf"><field name="END">FIRST</field><value name="VALUE"><block type="variables_get"><field name="VAR">text</field></block></value><value name="FIND"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block>
+        <block type="text_charAt"><field name="WHERE">FROM_START</field><value name="VALUE"><block type="variables_get"><field name="VAR">text</field></block></value></block>
+        <block type="text_getSubstring"><field name="WHERE1">FROM_START</field><field name="WHERE2">FROM_START</field><value name="STRING"><block type="variables_get"><field name="VAR">text</field></block></value></block>
+        <block type="text_changeCase"><field name="CASE">UPPERCASE</field><value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block>
+        <block type="text_trim"><field name="MODE">BOTH</field><value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block>
+        <block type="comment"></block>
+        <block type="text_print"><value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block>
       </category>
+
+      <!-- Lists -->
       <category name="Lists" colour="#745ba5">
-        <block type="lists_create_with">
-          <mutation items="0"></mutation>
-        </block>
-        <block type="lists_create_with">
-          <mutation items="3"></mutation>
-        </block>
-        <block type="lists_repeat">
-          <value name="NUM">
-            <shadow type="math_number">
-              <field name="NUM">5</field>
-            </shadow>
-          </value>
-        </block>
+        <block type="lists_create_with"><mutation items="0"></mutation></block>
+        <block type="lists_create_with"><mutation items="3"></mutation></block>
+        <block type="lists_repeat"><value name="NUM"><shadow type="math_number"><field name="NUM">5</field></shadow></value></block>
         <block type="lists_length"></block>
         <block type="lists_isEmpty"></block>
-        <block type="lists_indexOf">
-          <field name="END">FIRST</field>
-          <value name="VALUE">
-            <block type="variables_get">
-              <field name="VAR" id="k8|hQIbGNUm?zO%Na,Da">list</field>
-            </block>
-          </value>
-        </block>
-        <block type="lists_getIndex">
-          <mutation statement="false" at="true"></mutation>
-          <field name="MODE">GET</field>
-          <field name="WHERE">FROM_START</field>
-          <value name="VALUE">
-            <block type="variables_get">
-              <field name="VAR" id="k8|hQIbGNUm?zO%Na,Da">list</field>
-            </block>
-          </value>
-        </block>
-        <block type="lists_setIndex">
-          <mutation at="true"></mutation>
-          <field name="MODE">SET</field>
-          <field name="WHERE">FROM_START</field>
-          <value name="LIST">
-            <block type="variables_get">
-              <field name="VAR" id="k8|hQIbGNUm?zO%Na,Da">list</field>
-            </block>
-          </value>
-        </block>
-        <block type="lists_getSublist">
-          <mutation at1="true" at2="true"></mutation>
-          <field name="WHERE1">FROM_START</field>
-          <field name="WHERE2">FROM_START</field>
-          <value name="LIST">
-            <block type="variables_get">
-              <field name="VAR" id="k8|hQIbGNUm?zO%Na,Da">list</field>
-            </block>
-          </value>
-        </block>
-        <block type="lists_split">
-          <mutation mode="SPLIT"></mutation>
-          <field name="MODE">SPLIT</field>
-          <value name="DELIM">
-            <shadow type="text">
-              <field name="TEXT">,</field>
-            </shadow>
-          </value>
-        </block>
-        <block type="list_includes">
-          <value name="LIST">
-            <block type="variables_get">
-              <field name="VAR" id="k8|hQIbGNUm?zO%Na,Da">list</field>
-            </block>
-          </value>
-          <value name="VALUE">
-            <shadow type="text">
-              <field name="TEXT">apple</field>
-            </shadow>
-          </value>
-        </block>
+        <block type="lists_indexOf"><field name="END">FIRST</field><value name="VALUE"><block type="variables_get"><field name="VAR">list</field></block></value></block>
+        <block type="lists_getIndex"><field name="MODE">GET</field><field name="WHERE">FROM_START</field><value name="VALUE"><block type="variables_get"><field name="VAR">list</field></block></value></block>
+        <block type="lists_setIndex"><field name="MODE">SET</field><field name="WHERE">FROM_START</field><value name="LIST"><block type="variables_get"><field name="VAR">list</field></block></value></block>
+        <block type="lists_getSublist"><field name="WHERE1">FROM_START</field><field name="WHERE2">FROM_START</field><value name="LIST"><block type="variables_get"><field name="VAR">list</field></block></value></block>
+        <block type="lists_split"><field name="MODE">SPLIT</field><value name="DELIM"><shadow type="text"><field name="TEXT">,</field></shadow></value></block>
+        <block type="list_includes"><value name="LIST"><block type="variables_get"><field name="VAR">list</field></block></value><value name="VALUE"><shadow type="text"><field name="TEXT">apple</field></shadow></value></block>
       </category>
+
       <sep></sep>
+      
+      <!-- Core Logic & Variables -->
       <category name="Return" colour="#008855">
         <block type="local_this"> </block>
         <block type="proc_return"> </block>
-        <block type="proc_returnvalue">
-          <value name="VALUE">
-            <shadow type="math_number">
-              <field name="NUM">0.5</field>
-            </shadow>
-          </value>
-        </block>
-        <block type="proc_returnbool">
-          <field name="VALUE"> </field>
-        </block>
+        <block type="proc_returnvalue"><value name="VALUE"><shadow type="math_number"><field name="NUM">0.5</field></shadow></value></block>
+        <block type="proc_returnbool"><field name="VALUE"> </field></block>
       </category>
-     <category name="Events" colour="#a59f5b">
-        <block type="events_onModLoads">
-        </block>
-        <block type="events_onJoinWorld">
-        </block>
-        <!-- <block type="events_onKeyPressed">
-        </block>
-        <block type="events_onKeyReleased">
-        </block> 
-       -->
-        <block type="events_onClientTick">
-        </block>
-        <block type="events_onClientFrame">
-        </block>
+      <category name="Events" colour="#a59f5b">
+        <block type="events_onModLoads"></block>
+        <block type="events_onJoinWorld"></block>
+        <block type="events_onClientTick"></block>
+        <block type="events_onClientFrame"></block>
       </category>
+      
       <sep></sep>
       <category name="Variables" colour="#a55b80" custom="VARIABLE"></category>
       <category name="Globals" colour="#42f5bf">
@@ -407,199 +264,196 @@
       </category>
       <category name="Functions" colour="#995ba5" custom="PROCEDURE"></category>
       <sep></sep>
+
+      <!-- Eaglercraft Modding Specifics -->
       <category name="Blocks (H)" colour="#dd11dd">
-        <block type="handle_BlockConstructor"> </block>
-        <block type="handle_BlockBreak"> </block>
-        <block type="handle_BlockAdded"> </block>
-        <block type="handle_BlockNeighbourChange"> </block>
-        <block type="handle_BlockBrokenByPlayer"> </block>
-        <block type="handle_BlockRandomTick"> </block>
-        <block type="handle_BlockEntityCollision"> </block>
-        <block type="handle_BlockGetDroppedItem"> </block>
-        <block type="handle_BlockQuantityDropped"> </block>
+        <block type="handle_BlockConstructor"></block>
+        <block type="handle_BlockBreak"></block>
+        <block type="handle_BlockAdded"></block>
+        <block type="handle_BlockNeighbourChange"></block>
+        <block type="handle_BlockBrokenByPlayer"></block>
+        <block type="handle_BlockRandomTick"></block>
+        <block type="handle_BlockEntityCollision"></block>
+        <block type="handle_BlockGetDroppedItem"></block>
+        <block type="handle_BlockQuantityDropped"></block>
       </category>
       <category name="Blocks (C)" colour="#dd11dd">
-        <block type="blocks_currentblock"> </block>
-        <block type="blocks_block"> </block>
-        <block type="blocks_blockproperty"> </block>
-        <block type="blocks_blockswitch"> </block>
-        <block type="blocks_boundingbox"> </block>
-        <block type="blocks_creativetab"> </block>
-        <block type="blocks_setsoundtype"> </block>
+        <block type="blocks_currentblock"></block>
+        <block type="blocks_block"></block>
+        <block type="blocks_blockproperty"></block>
+        <block type="blocks_blockswitch"></block>
+        <block type="blocks_boundingbox"></block>
+        <block type="blocks_creativetab"></block>
+        <block type="blocks_setsoundtype"></block>
       </category>
       <category name="Items (H)" colour="#0033dd">
-        <block type="handle_ItemConstructor"> </block>
-        <block type="handle_ItemRightClick"> </block>
-        <block type="handle_ItemUsed"> </block>
-        <block type="handle_ItemTicked"> </block>
-        <block type="handle_ItemBlockUse"> </block>
-        <block type="handle_ItemCrafted"> </block>
-        <block type="handle_ItemBlockBroken"> </block>
-        <block type="handle_ItemGetAttributes"> </block>
-        <block type="handle_ItemGetEfficiency"> </block>
+        <block type="handle_ItemConstructor"></block>
+        <block type="handle_ItemRightClick"></block>
+        <block type="handle_ItemUsed"></block>
+        <block type="handle_ItemTicked"></block>
+        <block type="handle_ItemBlockUse"></block>
+        <block type="handle_ItemCrafted"></block>
+        <block type="handle_ItemBlockBroken"></block>
+        <block type="handle_ItemGetAttributes"></block>
+        <block type="handle_ItemGetEfficiency"></block>
       </category>
       <category name="Items (C)" colour="#0033dd">
-        <block type="items_currentitem"> </block>
-        <block type="items_item"> </block>
-        <block type="items_creativetab"> </block>
-        <block type="items_setmaxstacksize"> </block>
-        <block type="items_get_applicable_blocks"> </block>
+        <block type="items_currentitem"></block>
+        <block type="items_item"></block>
+        <block type="items_creativetab"></block>
+        <block type="items_setmaxstacksize"></block>
+        <block type="items_get_applicable_blocks"></block>
       </category>
       <category name="ItemStack (C)" colour="#44eebb">
-        <block type="itemstack_meta"> </block>
-        <block type="itemstack_setmeta"> </block>
-        <block type="itemstack_getitem"> </block>
-        <block type="itemstack_stacksize"> </block>
-        <block type="itemstack_setstacksize"> </block>
-        <block type="itemstack_displayname"> </block>
-        <block type="itemstack_setdisplayname"> </block>
+        <block type="itemstack_meta"></block>
+        <block type="itemstack_setmeta"></block>
+        <block type="itemstack_getitem"></block>
+        <block type="itemstack_stacksize"></block>
+        <block type="itemstack_setstacksize"></block>
+        <block type="itemstack_displayname"></block>
+        <block type="itemstack_setdisplayname"></block>
         <sep gap="40"></sep>
-        <block type="itemstack_enchant"> </block>
-        <block type="itemstack_repaircost"> </block>
-        <block type="itemstack_setrepaircost"> </block>
+        <block type="itemstack_enchant"></block>
+        <block type="itemstack_repaircost"></block>
+        <block type="itemstack_setrepaircost"></block>
       </category>
       <category name="SharedAttributes (C)" colour="#fcba03">
-        <block type="attributes_set"> </block>
+        <block type="attributes_set"></block>
       </category>
       <category name="BlockPos (C)" colour="#6633cc">
-        <block type="blockpos_fromxyz"> </block>
-        <block type="blockpos_getxyz"> </block>
+        <block type="blockpos_fromxyz"></block>
+        <block type="blockpos_getxyz"></block>
       </category>
       <category name="ActionResult 1.12 (C)" colour="#6633cc">
-        <block type="enumaction"> </block>
-        <block type="actionresult"> </block>
+        <block type="enumaction"></block>
+        <block type="actionresult"></block>
       </category>
-      <category name="Vec3  (C)" colour="#6633cc">
-        <block type="vec3_fromxyz"> </block>
-        <block type="vec3_getxyz"> </block>
-        <block type="vec3_dist"> </block>
+      <category name="Vec3 (C)" colour="#6633cc">
+        <block type="vec3_fromxyz"></block>
+        <block type="vec3_getxyz"></block>
+        <block type="vec3_dist"></block>
       </category>
       <category name="Debugger (C)" colour="#4422aa">
-        <block type="debug_log"> </block>
-        <block type="debug_warn"> </block>
-        <block type="debug_err"> </block>
-        <block type="debug_debugger"> </block>
+        <block type="debug_log"></block>
+        <block type="debug_warn"></block>
+        <block type="debug_err"></block>
+        <block type="debug_debugger"></block>
       </category>
       <category name="World (C)" colour="#22aabb">
-        <block type="world_is_not_remote"> </block>
-        <block type="world_explosion"> </block>
-        <block type="world_command"> </block>
-        <block type="world_execute_command_as_entity"> </block>
-        <block type="world_get_loaded_entities"> </block>
-        <block type="world_get_player_entities"> </block>
-        <block type="world_get_player_by_name"> </block>
+        <block type="world_is_not_remote"></block>
+        <block type="world_explosion"></block>
+        <block type="world_command"></block>
+        <block type="world_execute_command_as_entity"></block>
+        <block type="world_get_loaded_entities"></block>
+        <block type="world_get_player_entities"></block>
+        <block type="world_get_player_by_name"></block>
       </category>
       <category name="Entity (C)" colour="#ff8811">
-        <block type="entity_set_position"> </block>
-        <block type="entity_set_position_xyz"> </block>
-        <block type="entity_get_prop"> </block>
-        <block type="entity_set_prop"> </block>
+        <block type="entity_set_position"></block>
+        <block type="entity_set_position_xyz"></block>
+        <block type="entity_get_prop"></block>
+        <block type="entity_set_prop"></block>
         <sep gap="40"></sep>
-        <block type="entity_get_switch"> </block>
-        <block type="entity_set_switch"> </block>
+        <block type="entity_get_switch"></block>
+        <block type="entity_set_switch"></block>
         <sep gap="40"></sep>
-        <block type="entity_get_world"> </block>
-        <block type="entity_get_position"> </block>
-        <block type="entity_distance"> </block>
-        <block type="entity_distance_vec3"> </block>
-        <block type="entity_get_lookvec"> </block>
-        <block type="entity_get_eye_pos"> </block>
-        <block type="entity_raytrace"> </block>
+        <block type="entity_get_world"></block>
+        <block type="entity_get_position"></block>
+        <block type="entity_distance"></block>
+        <block type="entity_distance_vec3"></block>
+        <block type="entity_get_lookvec"></block>
+        <block type="entity_get_eye_pos"></block>
+        <block type="entity_raytrace"></block>
       </category>
       <category name="Player (C)" colour="#ff8811">
         <button text="Help" callbackKey="playerHelpButton"></button>
         <sep gap="30"></sep>
-        <block type="player_get_capability_boolean"> </block>
-        <block type="player_get_capability_number"> </block>
-        <block type="player_get_food_stats"> </block>
-        <block type="player_get_xp_stats"> </block>
+        <block type="player_get_capability_boolean"></block>
+        <block type="player_get_capability_number"></block>
+        <block type="player_get_food_stats"></block>
+        <block type="player_get_xp_stats"></block>
         <sep gap="40"></sep>
-        <block type="player_get_player_inventory"> </block>
-        <block type="player_get_item_hand"> </block>
-        <block type="player_get_current_item_pos"> </block>
+        <block type="player_get_player_inventory"></block>
+        <block type="player_get_item_hand"></block>
+        <block type="player_get_current_item_pos"></block>
         <sep gap="40"></sep>
-        <block type="player_get_player_name"> </block>
-        <block type="player_is_entity_player"> </block>
+        <block type="player_get_player_name"></block>
+        <block type="player_is_entity_player"></block>
       </category>
       <category name="Command (H)" colour="#ed120e">
-        <block type="handle_CommandCalledByPlayer"> </block>
-        <block type="handle_CommandCalled"> </block>
+        <block type="handle_CommandCalledByPlayer"></block>
+        <block type="handle_CommandCalled"></block>
       </category>
       <category name="Command (C)" colour="#ed120e">
-        <block type="command_sendmessage"> </block>
-        <block type="command_get_position"> </block>
-        <block type="command_get_world"> </block>
-        <block type="command_get_entity"> </block>
-        <block type="command_get_name"> </block>
+        <block type="command_sendmessage"></block>
+        <block type="command_get_position"></block>
+        <block type="command_get_world"></block>
+        <block type="command_get_entity"></block>
+        <block type="command_get_name"></block>
       </category>
       <category name="Crafting Recipe (H)" colour="#8c5e4d">
-        <block type="handle_CraftingRecipeModifyResult"> </block>
+        <block type="handle_CraftingRecipeModifyResult"></block>
       </category>
     </xml>
   </head>
 
   <body>
-    <table>
-      <tr>
-        <td>
-          <div id="toolbar">
-            <h1>EaglerForgeBuilder Public Beta</h1>
-            <button id="load">Load</button>
-            <button id="save">Save</button>
-            <button id="export">Export</button>
-            <button id="run">Run</button>
-            &nbsp;
-            <label>Compiler Target (WIP): </label>
-            <select id="compiler_target">
-              <option value="1_8">1.8.x</option>
-              <option value="1_12">1.12.x</option>
-            </select>
+    <!-- Top Navbar -->
+    <div id="toolbar">
+      <h1>EaglerForge Builder</h1>
+      <button id="load">Load</button>
+      <button id="save">Save</button>
+      <button id="export">Export</button>
+      <button id="run" style="background-color: #5ba55b;">Run Code</button>
+      
+      <div style="margin-left: 20px;">
+        <label for="compiler_target">Target: </label>
+        <select id="compiler_target">
+          <option value="1_8">Minecraft 1.8.x</option>
+          <option value="1_12">Minecraft 1.12.x</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Main Workspace Area -->
+    <div id="main-workspace">
+      
+      <!-- Left: Blockly Canvas -->
+      <div id="blockly-container">
+        <div id="blockly"></div>
+      </div>
+
+      <!-- Right: Properties & DataBlocks -->
+      <div id="right-panel">
+        <div id="propnav" style="font-weight: bold; margin-bottom: 15px;">Properties</div>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+          <select id="addtype" style="flex: 1;"></select>
+          <button id="newdatablock">New</button>
+        </div>
+
+        <div id="datablock_container">
+          <input id="search" type="search" placeholder="Search blocks..." />
+          
+          <!-- Example DataBlock Item -->
+          <div class="datablock selected">
+            <h4>Dirt Block</h4>
+            <i style="color: #aaa; font-size: 0.9rem;">Type: Block</i>
+            <div style="margin-top: 10px;">
+              <button style="background: #e74c3c; font-size: 0.8rem; padding: 4px 8px;">Delete</button>
+            </div>
           </div>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <table>
-            <tr>
-              <td>
-                <div id="blockly" style="background-color: darkslategrey"></div>
-              </td>
-              <td id="right">
-                <div id="propnav">properties of datablock</div>
-                <select id="addtype"></select>
-                <button style="margin-bottom: 1rem" id="newdatablock">
-                  New
-                </button>
-                <div id="datablock_container">
-                  <input
-                    id="search"
-                    type="search"
-                    value=""
-                    placeholder="Search for content: "
-                  /><br />
-                  <span class="datablock selected">
-                    <h4>Dirt Block</h4>
-                    <br />
-                    <i>Type: Block</i>
-                    <br /><br />
-                    <div class="controls">
-                      <button>Delete</button>
-                    </div>
-                  </span>
-                </div>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-    <!-- Blockly block libmap builder -->
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Script Loading (Unchanged) -->
     <script src="block_libmap.js"></script>
     <script src="libs/upatch.js"></script>
     <script src="libs/item_selector.js"></script>
     <script src="libs/handler_register.js"></script>
 
-    <!-- Additional blocks -->
     <script src="blocks/World.js"></script>
     <script src="blocks/Commands.js"></script>
     <script src="blocks/CraftingRecipe.js"></script>
@@ -612,15 +466,12 @@
     <script src="blocks/Vec3.js"></script>
     <script src="blocks/BlockPos.js"></script>
     <script src="blocks/Debug.js"></script>
-    <script src="blocks/Events.js"></script> <!-- Currently unused -->
+    <script src="blocks/Events.js"></script>
     <script src="blocks/ReturnBlock.js"></script>
     <script src="blocks/ActionResult.js"></script>
     <script src="blocks/Utils.js"></script>
 
-    <!-- The datablock types -->
     <script src="types.js"></script>
-
-    <!-- Datablock Primitives -->
     <script src="primitives/Inspector.js"></script>
     <script src="primitives/Metadata.js"></script>
     <script src="primitives/Icon.js"></script>
@@ -631,19 +482,23 @@
     <script src="primitives/CraftingRecipe.js"></script>
     <script src="primitives/FurnaceRecipe.js"></script>
 
-    <!-- Web App GUI and Engine -->
     <script src="functions.js"></script>
     <script src="propviewer.js"></script>
     <script src="index.js"></script>
     <script src="serialise.js"></script>
     <script src="compiler.js"></script>
 
-    <!-- Button script -->
+    <!-- Custom Button Logic -->
     <script>
       function playerHelpButton() {
         alert("Players are entities, by consequence all the blocks for entities also work for players, but not the contrary.");
       }
-      Blockly.getMainWorkspace().registerButtonCallback("playerHelpButton", playerHelpButton)
+      // Added a slight delay to ensure Blockly is fully loaded before registering the callback
+      window.onload = function() {
+        if(Blockly && Blockly.getMainWorkspace()) {
+            Blockly.getMainWorkspace().registerButtonCallback("playerHelpButton", playerHelpButton);
+        }
+      };
     </script>
   </body>
 </html>
