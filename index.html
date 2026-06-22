@@ -3,21 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EaglerForge Builder</title>
+    <title>EaglerForge Modular Builder</title>
     <link rel="stylesheet" href="stylesheet.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <style>
       :root {
-        --bg-dark: #1e1e1e;
-        --nav-bg: #2d2d2d;
-        --tab-bg: #222222;
-        --text-light: #f5f5f5;
-        --accent-client: #4a90e2; 
+        --bg-dark: #121212;
+        --nav-bg: #1e1e1e;
+        --tab-bg: #181818;
+        --text-light: #eaeaea;
+        --accent-client: #3498db; 
         --accent-server: #e67e22; 
-        --panel-bg: #252526;
+        --panel-bg: #1a1a1a;
         --current-accent: var(--accent-client); 
       }
       
@@ -30,69 +31,98 @@
 
       /* MAIN TOOLBAR */
       #toolbar {
-        background-color: var(--nav-bg); padding: 10px 20px;
+        background-color: var(--nav-bg); padding: 12px 20px;
         display: flex; align-items: center; gap: 15px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 20;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 20;
         border-bottom: 3px solid var(--current-accent); transition: 0.3s;
       }
 
-      #toolbar h1 { margin: 0; font-size: 1.2rem; margin-right: 15px; color: var(--current-accent); }
+      #toolbar h1 { margin: 0; font-size: 1.3rem; margin-right: 20px; color: var(--current-accent); text-transform: uppercase; letter-spacing: 1px;}
 
-      .mode-toggle { display: flex; background: #111; border-radius: 20px; overflow: hidden; margin-right: auto; }
-      .mode-btn { background: transparent; color: #888; padding: 6px 15px; font-size: 0.9rem; cursor: pointer; border: none; transition: 0.2s; }
+      .mode-toggle { display: flex; background: #0a0a0a; border-radius: 20px; overflow: hidden; margin-right: auto; border: 1px solid #333;}
+      .mode-btn { background: transparent; color: #888; padding: 6px 15px; font-size: 0.9rem; cursor: pointer; border: none; transition: 0.2s; font-weight: bold;}
       .mode-btn.active-client { background: var(--accent-client); color: white; }
       .mode-btn.active-server { background: var(--accent-server); color: white; }
 
-      button.action-btn { background-color: #444; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-      button.action-btn:hover { background-color: #555; }
+      button.action-btn { background-color: #333; color: white; border: 1px solid #444; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+      button.action-btn:hover { background-color: #444; transform: translateY(-1px);}
+      button.action-btn:active { transform: translateY(1px);}
 
-      #run-btn { background-color: #5ba55b; }
-      #export-zip-btn { background-color: #8e44ad; }
-      #export-jar-btn { display: none; background-color: var(--accent-server); }
-      select { padding: 6px; border-radius: 4px; background: #333; color: white; border: 1px solid #555; }
+      #run-btn { background-color: #27ae60; border-color: #2ecc71;}
+      #export-zip-btn { background-color: #8e44ad; border-color: #9b59b6;}
+      #export-jar-btn { display: none; background-color: var(--accent-server); border-color: #d35400;}
+      select { padding: 8px; border-radius: 6px; background: #222; color: white; border: 1px solid #444; outline: none;}
 
       /* TINKERS TAB BAR */
       #tab-bar { display: flex; background-color: var(--tab-bg); border-bottom: 3px solid var(--current-accent); z-index: 10; padding-left: 10px; overflow-x: auto; }
-      .workspace-tab { padding: 10px 20px; background: transparent; color: #aaa; border: none; cursor: pointer; font-weight: bold; font-size: 0.95rem; border-top-left-radius: 5px; border-top-right-radius: 5px; margin-top: 5px; transition: 0.2s; }
-      .workspace-tab:hover { background: #333; color: #fff; }
-      .workspace-tab.active { background: var(--current-accent); color: white; }
+      .workspace-tab { padding: 12px 25px; background: transparent; color: #888; border: none; cursor: pointer; font-weight: bold; font-size: 0.95rem; border-top-left-radius: 8px; border-top-right-radius: 8px; margin-top: 5px; transition: 0.2s; border-top: 1px solid transparent; border-left: 1px solid transparent; border-right: 1px solid transparent;}
+      .workspace-tab:hover { background: #252525; color: #fff; }
+      .workspace-tab.active { background: var(--bg-dark); color: var(--current-accent); border-top: 1px solid #333; border-left: 1px solid #333; border-right: 1px solid #333;}
 
       /* WORKSPACE CONTAINERS */
-      .workspace-view { display: none; flex: 1; height: calc(100vh - 100px); overflow: hidden; }
+      .workspace-view { display: none; flex: 1; height: calc(100vh - 115px); overflow: hidden; background: var(--bg-dark);}
       .workspace-view.active { display: flex; }
-      .panel-content { padding: 30px; width: 100%; box-sizing: border-box; overflow-y: auto; }
+      .panel-content { padding: 40px; width: 100%; box-sizing: border-box; overflow-y: auto; }
 
       /* LOGIC TAB */
-      #blockly-container { flex: 3; position: relative; background-color: darkslategrey; }
+      #blockly-container { flex: 2.5; position: relative; background-color: #1e272e; border-right: 2px solid #000;}
       #blockly { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-      #right-panel { flex: 1.2; background-color: var(--panel-bg); border-left: 2px solid #333; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+      #right-panel { flex: 1; background-color: var(--panel-bg); padding: 20px; display: flex; flex-direction: column; overflow-y: auto; box-shadow: inset 5px 0 15px rgba(0,0,0,0.3);}
 
       /* 3D MODELER EMBED */
-      #modeler-container { width: 100%; height: 300px; background: #111; border-radius: 8px; border: 1px solid #444; margin-bottom: 15px; display: flex; flex-direction: column; overflow: hidden; }
-      #modeler-header { background: #333; padding: 5px 10px; font-size: 0.8rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-      #modeler-canvas { flex: 1; position: relative; background: #222; }
-      #modeler-controls { background: #1a1a1a; padding: 8px; display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; border-top: 1px solid #333;}
-      .tool-btn { background: #4a90e2; border: none; color: white; padding: 4px 8px; border-radius: 3px; font-size: 0.75rem; cursor: pointer; font-weight: bold;}
-      .tool-btn:hover { background: #357abd; }
-      .tool-btn.edit { background: #e67e22; }
+      #modeler-container { width: 100%; height: 350px; background: #0a0a0a; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.5);}
+      #modeler-header { background: #111; padding: 8px 12px; font-size: 0.85rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; color: #aaa;}
+      #modeler-canvas { flex: 1; position: relative; background: radial-gradient(circle at center, #222 0%, #0a0a0a 100%); cursor: grab;}
+      #modeler-canvas:active { cursor: grabbing; }
+      #modeler-controls { background: #111; padding: 10px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; border-top: 1px solid #333;}
+      
+      .tool-btn { background: #34495e; border: 1px solid #2c3e50; color: white; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: bold; transition: 0.2s;}
+      .tool-btn:hover { background: #415b76; }
+      .tool-btn.edit { background: #e67e22; border-color: #d35400;}
+      .tool-btn.edit:hover { background: #f39c12; }
+
+      /* FACE TEXTURING MENU */
+      .face-selector { display: flex; gap: 5px; margin-bottom: 10px; background: #222; padding: 8px; border-radius: 6px; justify-content: center; border: 1px solid #333;}
+      .face-btn { background: #111; color: #888; border: 1px solid #444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold;}
+      .face-btn.active { background: #3498db; color: white; border-color: #2980b9;}
 
       #datablock_container { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto;}
-      #search { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white; box-sizing: border-box; }
-      .datablock { background: #333; padding: 15px; border-radius: 6px; border-left: 4px solid var(--current-accent); cursor: pointer; transition: 0.2s;} 
-      .datablock:hover { background: #444; }
-      .datablock h4 { margin: 0 0 5px 0; }
+      #search { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #444; background: #111; color: white; box-sizing: border-box; outline: none; transition: 0.2s;}
+      #search:focus { border-color: var(--current-accent); }
+      
+      .datablock { background: #222; padding: 15px; border-radius: 8px; border-left: 4px solid var(--current-accent); cursor: pointer; transition: 0.2s; border-top: 1px solid #333; border-right: 1px solid #333; border-bottom: 1px solid #333; box-shadow: 0 2px 5px rgba(0,0,0,0.2);} 
+      .datablock:hover { background: #2a2a2a; transform: translateX(2px);}
+      .datablock h4 { margin: 0 0 5px 0; color: #fff;}
 
       /* PIXEL MAKER UI */
-      .pixel-toolbar { display: flex; gap: 10px; margin-bottom: 20px; background: #222; padding: 10px; border-radius: 8px; align-items: center;}
-      .pixel-tool { background: #444; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;}
-      .pixel-tool.active { background: #55ff55; color: black; }
-      #pixelCanvas { background: transparent; border: 1px solid #555; image-rendering: pixelated; width: 320px; height: 320px; cursor: crosshair; background-image: linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333), linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333); background-size: 20px 20px; background-position: 0 0, 10px 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5);}
+      .pixel-workspace { display: flex; gap: 30px; align-items: flex-start;}
+      .pixel-tools-container { background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333; display: flex; flex-direction: column; gap: 15px; min-width: 200px;}
+      .pixel-tool { background: #333; color: white; border: 1px solid #444; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left; transition: 0.2s;}
+      .pixel-tool:hover { background: #444; }
+      .pixel-tool.active { background: #27ae60; border-color: #2ecc71; color: white; }
       
-      .panel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
-      .card { background: #333; padding: 20px; border-radius: 8px; border-left: 4px solid var(--current-accent); }
+      .canvas-wrapper { background: #0a0a0a; padding: 20px; border-radius: 10px; border: 1px solid #333; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5);}
+      #pixelCanvas { background: transparent; border: 1px solid #444; image-rendering: pixelated; width: 512px; height: 512px; cursor: crosshair; background-image: linear-gradient(45deg, #222 25%, transparent 25%, transparent 75%, #222 75%, #222), linear-gradient(45deg, #222 25%, transparent 25%, transparent 75%, #222 75%, #222); background-size: 32px 32px; background-position: 0 0, 16px 16px; box-shadow: 0 0 20px rgba(0,0,0,0.8);}
+      
+      .panel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-top: 25px; }
+      .card { background: #222; padding: 25px; border-radius: 10px; border-left: 4px solid var(--current-accent); border-top: 1px solid #333; border-right: 1px solid #333; border-bottom: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s;}
+      .card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.4);}
+      .card h4 { margin-top: 0; font-size: 1.1rem; color: #fff;}
       
       /* RAW JS TAB */
-      #js-code-display { width: 100%; height: 80%; background: #111; color: #55ff55; font-family: monospace; padding: 15px; border-radius: 5px; border: 1px solid #444; overflow-y: auto; white-space: pre-wrap; }
+      #js-code-display { width: 100%; height: 80%; background: #0a0a0a; color: #2ecc71; font-family: 'Consolas', monospace; padding: 20px; border-radius: 8px; border: 1px solid #333; overflow-y: auto; white-space: pre-wrap; font-size: 0.95rem; line-height: 1.5; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);}
+
+      /* TUTORIAL SIDEBAR */
+      #tutorial-panel { width: 300px; background: #1a1a1a; border-left: 2px solid #333; display: flex; flex-direction: column; box-shadow: inset 5px 0 15px rgba(0,0,0,0.3); z-index: 15;}
+      .tut-header { background: #111; padding: 15px; border-bottom: 1px solid #333; font-weight: bold; color: #f1c40f; text-align: center; font-size: 1.1rem; letter-spacing: 1px;}
+      .tut-content { padding: 20px; overflow-y: auto; flex: 1; }
+      .tut-step { background: #222; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 15px; position: relative;}
+      .tut-step.active { border-color: #f1c40f; box-shadow: 0 0 10px rgba(241, 196, 15, 0.2); }
+      .tut-step h5 { margin: 0 0 10px 0; color: #fff; font-size: 1rem;}
+      .tut-step p { margin: 0; color: #aaa; font-size: 0.85rem; line-height: 1.4;}
+      .tut-nav { display: flex; justify-content: space-between; padding: 15px; background: #111; border-top: 1px solid #333;}
+      .tut-btn { background: #333; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;}
+      .tut-btn:hover { background: #444; }
     </style>
 
     <script src="./libs/blockly/blockly_compressed.js"></script>
@@ -199,7 +229,7 @@
 
   <body>
     <div id="toolbar">
-      <h1 id="app-title">Builder</h1>
+      <h1 id="app-title">Mod Builder</h1>
       
       <div class="mode-toggle">
         <button id="mode-client" class="mode-btn active-client" onclick="switchMode('client')">Client (EaglerForge)</button>
@@ -218,8 +248,8 @@
         <button id="compile"></button>
       </div>
 
-      <div style="margin-left: 20px;">
-        <label for="compiler_target">Target: </label>
+      <div style="margin-left: auto;">
+        <label for="compiler_target" style="font-size: 0.9rem; font-weight:bold; margin-right: 5px;">Target: </label>
         <select id="compiler_target">
           <option value="1_8">1.8.x</option>
           <option value="1_12">1.12.x</option>
@@ -237,107 +267,185 @@
       <button class="workspace-tab" onclick="openTab('view-projects', this)">📂 Projects</button>
     </div>
 
-    <div id="view-logic" class="workspace-view active">
-      <div id="blockly-container">
-        <div id="blockly"></div>
-      </div>
-
-      <div id="right-panel">
+    <div style="display: flex; flex: 1; overflow: hidden;">
+      
+      <div id="main-content-area" style="flex: 1; display: flex; flex-direction: column;">
         
-        <div id="modeler-container">
-          <div id="modeler-header">
-            <span>3D Asset Engine</span>
+        <div id="view-logic" class="workspace-view active">
+          <div id="blockly-container">
+            <div id="blockly"></div>
           </div>
-          <div id="modeler-canvas"></div>
-          <div id="modeler-controls">
-            <button class="tool-btn" onclick="spawnCube()">Spawn MC Cube</button>
-            <button class="tool-btn edit" onclick="stretchCube()">Stretch (X)</button>
-            <button class="tool-btn edit" onclick="stretchCubeY()">Stretch (Y)</button>
-            <button class="tool-btn" onclick="duplicateCube()">Duplicate Block</button>
-            <button class="tool-btn edit" onclick="clearScene()">Clear Canvas</button>
+
+          <div id="right-panel">
+            
+            <div id="modeler-container">
+              <div id="modeler-header">
+                <span>3D Asset Viewer</span>
+                <span style="font-weight: normal; font-size: 0.7rem;">(Drag to rotate)</span>
+              </div>
+              <div id="modeler-canvas"></div>
+              
+              <div class="face-selector">
+                <button class="face-btn active" onclick="selectFace('front', this)">Front</button>
+                <button class="face-btn" onclick="selectFace('back', this)">Back</button>
+                <button class="face-btn" onclick="selectFace('top', this)">Top</button>
+                <button class="face-btn" onclick="selectFace('bottom', this)">Bottom</button>
+                <button class="face-btn" onclick="selectFace('left', this)">Left</button>
+                <button class="face-btn" onclick="selectFace('right', this)">Right</button>
+              </div>
+
+              <div id="modeler-controls">
+                <button class="tool-btn" onclick="spawnCube()">+ MC Cube</button>
+                <button class="tool-btn edit" onclick="stretchCube()">Stretch X</button>
+                <button class="tool-btn edit" onclick="stretchCubeY()">Stretch Y</button>
+                <button class="tool-btn edit" onclick="stretchCubeZ()">Stretch Z</button>
+                <button class="tool-btn" onclick="duplicateCube()">Clone</button>
+                <button class="tool-btn" style="background:#e74c3c" onclick="clearScene()">Clear</button>
+              </div>
+            </div>
+
+            <div id="propnav" style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">Workspace Blocks</div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+              <select id="addtype">
+                <option value="logic">Logic Module</option>
+                <option value="entity">Entity AI</option>
+                <option value="item">Custom Item</option>
+              </select>
+              <button class="action-btn" id="newdatablock" onclick="addNewLogicTab()">+ Add Block</button>
+            </div>
+
+            <div id="datablock_container">
+              <input id="search" type="search" placeholder="Search logic blocks..." />
+              <div class="datablock selected" style="display: block;" onclick="alert('Switching Blockly workspace to Main Initialization')">
+                <h4>Main Initialization</h4>
+                <i style="color: #aaa; font-size: 0.85rem;">Type: Global Mod Event</i>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div id="propnav" style="font-weight: bold; margin-bottom: 15px;">Workspace Blocks</div>
-        
-        <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
-          <select id="addtype"></select>
-          <button class="action-btn" id="newdatablock" onclick="addNewLogicTab()">+ New Logic Tab</button>
-        </div>
+        <div id="view-pixelmaker" class="workspace-view panel-content">
+          <div style="max-width: 800px;">
+            <h2 style="color: #f1c40f; margin-top: 0;">🖍️ Pixel Art Studio</h2>
+            <p style="color: #bbb; line-height: 1.5; margin-bottom: 25px;">Draw custom items, food, and blocks from scratch. When you export, the file is ready to be dropped into your mod's texture folder.</p>
+            
+            <div class="pixel-workspace">
+              <div class="pixel-tools-container">
+                <h3 style="margin-top:0; font-size:1rem; border-bottom:1px solid #333; padding-bottom:10px;">Tools</h3>
+                
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                  <input type="color" id="pixelColor" value="#55ff55" style="width: 100%; height: 40px; cursor: pointer; border:none; border-radius:4px;">
+                </div>
+                
+                <button class="pixel-tool active" id="toolPencil" onclick="setTool('pencil')">✏️ Pencil Brush</button>
+                <button class="pixel-tool" id="toolEraser" onclick="setTool('eraser')">🧽 Block Eraser</button>
+                <button class="pixel-tool" id="toolBucket" onclick="fillCanvas()">🪣 Fill Background</button>
+                <button class="pixel-tool" style="margin-top: 20px; background:#e74c3c; border-color:#c0392b;" onclick="clearPixelCanvas()">🗑️ Clear Canvas</button>
+                
+                <button class="action-btn" onclick="exportPixelArt()" style="margin-top: auto; padding: 15px; font-size: 1rem; background: var(--accent-client);">💾 Export .PNG</button>
+              </div>
 
-        <div id="datablock_container">
-          <input id="search" type="search" placeholder="Search logic blocks..." />
-          <div class="datablock selected" style="display: block;" onclick="alert('Switching Blockly workspace to Main Initialization')">
-            <h4>Main Initialization</h4>
-            <i style="color: #aaa; font-size: 0.9rem;">Type: Global Mod Event</i>
+              <div class="canvas-wrapper">
+                <canvas id="pixelCanvas" width="16" height="16"></canvas>
+                <div style="text-align: center; color: #666; margin-top: 15px; font-weight: bold;">16 x 16 Resolution</div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <div id="view-textures" class="workspace-view panel-content">
+          <h2 style="color: var(--accent-client); margin-top: 0;">🎨 Texture Library</h2>
+          <p style="color: #bbb; margin-bottom: 25px;">Upload your downloaded 1.20 PNGs or custom pixel art here. They will be bundled into the final ZIP exporter.</p>
+          
+          <input type="file" id="fileUploader" accept="image/png" style="display:none" onchange="handleFileUpload(event)">
+          <button class="action-btn" style="padding: 12px 20px; font-size: 1rem;" onclick="document.getElementById('fileUploader').click()">+ Upload New Texture</button>
+          
+          <div class="panel-grid" id="texture-grid"></div>
+        </div>
+
+        <div id="view-entities" class="workspace-view panel-content">
+          <h2 style="color: #e74c3c; margin-top: 0;">🧟 Entity Design Lab</h2>
+          <p style="color: #bbb; margin-bottom: 25px;">Register new custom mobs, bosses, and Jaegers. Build their AI logic in the Blockly tab.</p>
+          <button class="action-btn" style="padding: 12px 20px; font-size: 1rem; background: #c0392b; border-color: #a93226;" onclick="createEntityCard()">+ Register New Entity</button>
+          
+          <div class="panel-grid" id="entity-grid">
+            <div class="card">
+              <h4 style="color: #ff7675;">Custom Pillager</h4>
+              <p style="color:#aaa; font-size:0.9rem;">ID: mod:pillager_variant</p>
+              <div style="background: #111; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 0.8rem; color: #55ff55;">
+                > Holding: Crossbow<br>> R_Arm Pitch: -90
+              </div>
+              <button class="action-btn" style="background:#333; margin-top: 15px; width: 100%;">Edit Logic</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="view-dimensions" class="workspace-view panel-content">
+          <h2 style="color: #9b59b6; margin-top: 0;">🌌 Dimension Builder</h2>
+          <p style="color: #bbb; margin-bottom: 25px;">Manage chunk generators, custom ores, and Horror Dimension teleporter blocks.</p>
+          <button class="action-btn" style="padding: 12px 20px; font-size: 1rem; background: #8e44ad; border-color: #732d91;" onclick="createDimCard()">+ Create Dimension</button>
+          
+          <div class="panel-grid" id="dim-grid">
+            <div class="card">
+              <h4 style="color: #d2b4de;">The Deep Dark</h4>
+              <p style="color:#aaa; font-size:0.9rem;">Dimension ID: 4</p>
+              <div style="background: #111; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 0.8rem; color: #f1c40f;">
+                > Base: Deepslate<br>> Sky: #000000
+              </div>
+              <button class="action-btn" style="background:#333; margin-top: 15px; width: 100%;">Edit Generation</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="view-rawjs" class="workspace-view panel-content">
+          <h2 style="color: #2ecc71; margin-top: 0;">💻 Compiled JavaScript</h2>
+          <p style="color: #bbb; margin-bottom: 20px;">Review the engine code generated by your Blockly layout.</p>
+          <button class="action-btn" onclick="updateRawJS()" style="margin-bottom: 20px; background: #27ae60;">🔄 Generate Code</button>
+          <div id="js-code-display">// Click 'Generate Code' to compile your blocks...</div>
+        </div>
+
+        <div id="view-projects" class="workspace-view panel-content">
+          <h2 style="color: var(--accent-client); margin-top: 0;">📂 My Projects</h2>
+          <button class="action-btn" style="padding: 12px 20px; font-size: 1rem;" onclick="createProjectCard()">+ New Project Workspace</button>
+          
+          <div class="panel-grid" id="project-grid">
+            <div class="card">
+              <h4 style="color: #fff;">1.20 Backport Phase 1</h4>
+              <p style="color:#2ecc71; font-weight: bold; font-size:0.9rem;">Status: Active</p>
+              <button class="action-btn" style="background:var(--accent-client); margin-top: 10px; width: 100%;">Loaded</button>
+            </div>
+          </div>
+        </div>
+
+      </div> <div id="tutorial-panel">
+        <div class="tut-header">📘 Builder Guide</div>
+        <div class="tut-content" id="tut-content">
+          <div class="tut-step active" id="step-1">
+            <h5>1. The Pixel Maker</h5>
+            <p>Go to the 🖍️ Pixel Maker tab. Draw a simple sword or food item using the tools. Click Export when done!</p>
+          </div>
+          <div class="tut-step" id="step-2">
+            <h5>2. Texture Upload</h5>
+            <p>Go to 🎨 Texture Upload. Click the button to upload the PNG you just drew so the builder can access it.</p>
+          </div>
+          <div class="tut-step" id="step-3">
+            <h5>3. Logic Registration</h5>
+            <p>Go to 🧱 Logic. Under 'Custom Items', drag 'item_create_sword' into the workspace. Name it 'mod:my_sword'.</p>
+          </div>
+          <div class="tut-step" id="step-4">
+            <h5>4. Export Mod</h5>
+            <p>Click the purple 'Export Texture .ZIP' button on the top bar to pack your textures for Eaglercraft!</p>
+          </div>
+        </div>
+        <div class="tut-nav">
+          <button class="tut-btn" onclick="prevTut()">◄ Prev</button>
+          <span style="color: #888; font-size: 0.9rem; align-self: center;" id="tut-tracker">1 / 4</span>
+          <button class="tut-btn" onclick="nextTut()">Next ►</button>
+        </div>
       </div>
-    </div>
 
-    <div id="view-pixelmaker" class="workspace-view panel-content">
-      <h2>Beginner Pixel Art Maker</h2>
-      <p>Draw custom items and blocks here! Perfect for adding new food, swords, and ores.</p>
-      
-      <div class="pixel-toolbar">
-        <input type="color" id="pixelColor" value="#55ff55" style="width: 50px; height: 40px; cursor: pointer;">
-        <button class="pixel-tool active" id="toolPencil" onclick="setTool('pencil')">✏️ Pencil</button>
-        <button class="pixel-tool" id="toolEraser" onclick="setTool('eraser')">🧽 Eraser</button>
-        <button class="pixel-tool" id="toolBucket" onclick="fillCanvas()">🪣 Fill Canvas</button>
-        <button class="action-btn" onclick="exportPixelArt()" style="margin-left: auto;">💾 Download .PNG</button>
-      </div>
-
-      <canvas id="pixelCanvas" width="16" height="16"></canvas>
-      <p style="color: #888; margin-top: 10px;">Grid size: 16x16 (Minecraft Standard). Click and drag to draw!</p>
-    </div>
-
-    <div id="view-textures" class="workspace-view panel-content">
-      <h2>Texture Library (Backports)</h2>
-      <p>Upload your 1.20 PNGs here so they get bundled into your final ZIP exporter.</p>
-      
-      <input type="file" id="fileUploader" accept="image/png" style="display:none" onchange="handleFileUpload(event)">
-      <button class="action-btn" style="margin-bottom: 20px;" onclick="document.getElementById('fileUploader').click()">+ Upload New .PNG Texture</button>
-      
-      <div class="panel-grid" id="texture-grid"></div>
-    </div>
-
-    <div id="view-entities" class="workspace-view panel-content">
-      <h2>Entity Design Lab</h2>
-      <p>Create new mobs, mechs, and adjust hitboxes.</p>
-      <button class="action-btn" style="margin-bottom: 20px;" onclick="createEntityCard()">+ Create New Entity Node</button>
-      
-      <div class="panel-grid" id="entity-grid">
-        <div class="card"><h4>Custom Pillager</h4><p>Holding: Crossbow<br>Arm Pose: Pitch -90</p></div>
-      </div>
-    </div>
-
-    <div id="view-dimensions" class="workspace-view panel-content">
-      <h2>Dimension Builder</h2>
-      <p>Manage chunk generators, ore spawning levels, and dimension IDs.</p>
-      <button class="action-btn" style="margin-bottom: 20px;" onclick="createDimCard()">+ Register New Dimension ID</button>
-      
-      <div class="panel-grid" id="dim-grid">
-        <div class="card"><h4>The Deep Dark</h4><p>Dim ID: 4<br>Stone Replacement: Deepslate</p></div>
-      </div>
-    </div>
-
-    <div id="view-rawjs" class="workspace-view panel-content">
-      <h2>Compiled JavaScript Engine</h2>
-      <p>If you prefer to code manually, you can edit the raw EaglerForge JS output here.</p>
-      <button class="action-btn" onclick="updateRawJS()" style="margin-bottom: 10px;">Refresh Code from Blocks</button>
-      <div id="js-code-display">// Your generated mod code will appear here...</div>
-    </div>
-
-    <div id="view-projects" class="workspace-view panel-content">
-      <h2>My Saved Environments</h2>
-      <button class="action-btn" style="margin-bottom: 20px;" onclick="createProjectCard()">+ New Environment</button>
-      
-      <div class="panel-grid" id="project-grid">
-        <div class="card"><h4>1.20 Backport Phase 1</h4><p>Status: Active</p><button class="action-btn">Load</button></div>
-      </div>
-    </div>
-
-    <script src="block_libmap.js"></script>
+    </div> <script src="block_libmap.js"></script>
     <script src="libs/upatch.js"></script>
     <script src="libs/item_selector.js"></script>
     <script src="libs/handler_register.js"></script>
@@ -437,76 +545,114 @@
         if (typeof Blockly !== 'undefined' && Blockly.getMainWorkspace()) {
           try {
             document.getElementById('js-code-display').innerText = Blockly.JavaScript.workspaceToCode(Blockly.getMainWorkspace()) || "// Workspace is empty.";
-          } catch (e) { document.getElementById('js-code-display').innerText = "// Error generating code."; }
+          } catch (e) { document.getElementById('js-code-display').innerText = "// Error generating code. Blocks may not be fully connected."; }
         }
       }
 
-      // 2. Logic Tab Expansion (Moves blocks into new logic tabs)
+      // 2. Logic Tab Expansion
       function addNewLogicTab() {
         const container = document.getElementById('datablock_container');
-        const name = prompt("Name your new logic tab (e.g., 'Gun Mechanics' or 'Jaeger Core'):", "New Feature");
+        const name = prompt("Name your logic tab (e.g., 'Jaeger Plasma Logic'):", "New Feature");
         if(name) {
             const block = document.createElement('div');
             block.className = 'datablock';
             block.style.display = 'block';
-            block.onclick = function() { alert("Switching Blockly workspace to " + name); };
-            block.innerHTML = `<h4>${name}</h4><i style="color: #aaa; font-size: 0.9rem;">Type: Script Module</i><div style="margin-top: 10px;"><button style="background: #e74c3c; border:none; color:white; font-size: 0.8rem; padding: 4px 8px; border-radius:3px; cursor:pointer;" onclick="event.stopPropagation(); this.parentElement.parentElement.remove()">Delete</button></div>`;
+            block.onclick = function() { 
+              document.querySelectorAll('.datablock').forEach(b => b.classList.remove('selected'));
+              this.classList.add('selected');
+            };
+            block.innerHTML = `<h4>${name}</h4><i style="color: #aaa; font-size: 0.85rem;">Type: Script Module</i><div style="margin-top: 10px;"><button style="background: #e74c3c; border:none; color:white; font-size: 0.8rem; padding: 4px 8px; border-radius:3px; cursor:pointer;" onclick="event.stopPropagation(); this.parentElement.parentElement.remove()">Delete</button></div>`;
             container.appendChild(block);
         }
       }
 
-      // 3. Tinkers UI Generators (Entities, Dimensions, Projects, Textures)
+      // 3. Tinkers UI Generators
       function createEntityCard() {
-        const name = prompt("Enter new Entity ID (e.g., mod:gipsy_danger):", "mod:new_entity");
-        if(name) document.getElementById('entity-grid').innerHTML += `<div class="card"><h4>${name}</h4><p>Status: Draft<br>No model linked</p><button class="action-btn" style="background:#e74c3c; margin-top: 10px;" onclick="this.parentElement.remove()">Delete</button></div>`;
+        const name = prompt("Enter Entity ID (e.g., mod:gipsy_danger):", "mod:new_entity");
+        if(name) document.getElementById('entity-grid').innerHTML += `<div class="card"><h4>${name}</h4><p style="color:#aaa; font-size:0.9rem;">Status: Draft</p><button class="action-btn" style="background:#c0392b; margin-top: 15px; width: 100%; border-color:#a93226;" onclick="this.parentElement.remove()">Delete</button></div>`;
       }
       function createDimCard() {
         const name = prompt("Enter Dimension Name:", "New Dimension");
-        if(name) document.getElementById('dim-grid').innerHTML += `<div class="card"><h4>${name}</h4><p>Status: Draft<br>No generation logic set</p><button class="action-btn" style="background:#e74c3c; margin-top: 10px;" onclick="this.parentElement.remove()">Delete</button></div>`;
+        if(name) document.getElementById('dim-grid').innerHTML += `<div class="card"><h4>${name}</h4><p style="color:#aaa; font-size:0.9rem;">Status: Empty</p><button class="action-btn" style="background:#c0392b; margin-top: 15px; width: 100%; border-color:#a93226;" onclick="this.parentElement.remove()">Delete</button></div>`;
       }
       function createProjectCard() {
-        const name = prompt("Enter Project Name:", "My Awesome Mod");
-        if(name) document.getElementById('project-grid').innerHTML += `<div class="card"><h4>${name}</h4><p>Status: Fresh</p><button class="action-btn" style="background:#e74c3c; margin-top: 10px;" onclick="this.parentElement.remove()">Delete</button></div>`;
+        const name = prompt("Enter Project Name:", "My Mod");
+        if(name) document.getElementById('project-grid').innerHTML += `<div class="card"><h4 style="color:#fff;">${name}</h4><p style="color:#aaa; font-size:0.9rem;">Status: Saved</p><button class="action-btn" style="background:#c0392b; margin-top: 10px; width: 100%;" onclick="this.parentElement.remove()">Delete</button></div>`;
       }
+      
+      // Upload Logic
       function handleFileUpload(event) {
         const file = event.target.files[0];
         if (file) {
             const url = URL.createObjectURL(file);
-            document.getElementById('texture-grid').innerHTML += `<div class="card"><img src="${url}" style="width: 64px; height: 64px; image-rendering: pixelated; border: 1px solid #555; background: #000; margin-bottom:10px;"><br><h4>${file.name}</h4><button class="action-btn" style="background:#e74c3c; margin-top: 10px;" onclick="this.parentElement.remove()">Remove</button></div>`;
+            document.getElementById('texture-grid').innerHTML += `<div class="card" style="text-align: center;"><img src="${url}" style="width: 80px; height: 80px; image-rendering: pixelated; border: 1px solid #444; background: #000; border-radius: 6px; margin-bottom:15px;"><br><h4 style="color:#fff; font-size:0.9rem; word-break:break-all;">${file.name}</h4><button class="action-btn" style="background:#c0392b; margin-top: 10px; width:100%; border-color:#a93226;" onclick="this.parentElement.remove()">Remove</button></div>`;
         }
       }
 
       // 4. THREE.JS LIVE 3D ENGINE
-      let scene, camera, renderer, selectedObject;
+      let scene, camera, renderer, selectedObject, controls;
+      let activeFace = 'front';
+
       function init3D() {
         const container = document.getElementById('modeler-canvas');
         scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        
+        camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(2, 2, 3);
+        
         renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
         container.appendChild(renderer.domElement);
+
+        // Add Drag controls
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
         const light = new THREE.DirectionalLight(0xffffff, 1); light.position.set(5, 10, 7);
-        scene.add(light); scene.add(new THREE.AmbientLight(0x404040));
-        camera.position.z = 3; camera.position.y = 1.5; camera.lookAt(0, 0, 0);
+        scene.add(light); scene.add(new THREE.AmbientLight(0x606060));
         
         function animate() {
           requestAnimationFrame(animate);
-          if (selectedObject) selectedObject.rotation.y += 0.01;
+          controls.update();
           renderer.render(scene, camera);
         }
         animate();
       }
+
       function spawnCube() {
         const geom = new THREE.BoxGeometry(1, 1, 1);
-        const mat = new THREE.MeshLambertMaterial({ color: 0xcccccc, wireframe: false });
-        const cube = new THREE.Mesh(geom, mat);
-        const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geom), new THREE.LineBasicMaterial({ color: 0x000000 }));
-        cube.add(edges); scene.add(cube); selectedObject = cube;
+        
+        // Setup materials for individual faces (to allow face selection texturing later)
+        const materials = [
+          new THREE.MeshLambertMaterial({ color: 0xcccccc }), // right
+          new THREE.MeshLambertMaterial({ color: 0xcccccc }), // left
+          new THREE.MeshLambertMaterial({ color: 0xdddddd }), // top
+          new THREE.MeshLambertMaterial({ color: 0x999999 }), // bottom
+          new THREE.MeshLambertMaterial({ color: 0xaaaaaa }), // front
+          new THREE.MeshLambertMaterial({ color: 0xaaaaaa }), // back
+        ];
+
+        const cube = new THREE.Mesh(geom, materials);
+        const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geom), new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 }));
+        cube.add(edges); 
+        scene.add(cube); 
+        selectedObject = cube;
       }
-      function stretchCube() { if(selectedObject) selectedObject.scale.x += 0.25; else alert("Spawn a cube!"); }
-      function stretchCubeY() { if(selectedObject) selectedObject.scale.y += 0.25; else alert("Spawn a cube!"); }
-      function duplicateCube() { if(selectedObject) { let clone = selectedObject.clone(); clone.position.x += 1.5; scene.add(clone); selectedObject = clone; } else alert("Spawn a cube!"); }
-      function clearScene() { while(scene.children.length > 0) scene.remove(scene.children[0]); scene.add(new THREE.DirectionalLight(0xffffff, 1).position.set(5, 10, 7)); scene.add(new THREE.AmbientLight(0x404040)); selectedObject = null; }
+      
+      function stretchCube() { if(selectedObject) selectedObject.scale.x += 0.25; }
+      function stretchCubeY() { if(selectedObject) selectedObject.scale.y += 0.25; }
+      function stretchCubeZ() { if(selectedObject) selectedObject.scale.z += 0.25; }
+      function duplicateCube() { if(selectedObject) { let clone = selectedObject.clone(); clone.position.x += 1.5; scene.add(clone); selectedObject = clone; } }
+      function clearScene() { while(scene.children.length > 0) scene.remove(scene.children[0]); scene.add(new THREE.DirectionalLight(0xffffff, 1).position.set(5, 10, 7)); scene.add(new THREE.AmbientLight(0x606060)); selectedObject = null; }
+
+      // Face Selector
+      function selectFace(face, btn) {
+        activeFace = face;
+        document.querySelectorAll('.face-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // Future Logic: If a texture is uploaded, apply it to selectedObject.material[faceIndex].map
+      }
 
       // 5. PIXEL MAKER LOGIC
       let currentTool = 'pencil';
@@ -526,6 +672,10 @@
         ctx.fillStyle = document.getElementById('pixelColor').value;
         ctx.fillRect(0,0,16,16);
       }
+      
+      function clearPixelCanvas() {
+        ctx.clearRect(0,0,16,16);
+      }
 
       function drawPixel(e) {
         const rect = pixCanvas.getBoundingClientRect();
@@ -533,11 +683,13 @@
         const x = Math.floor((e.clientX - rect.left) / scale);
         const y = Math.floor((e.clientY - rect.top) / scale);
         
-        if (currentTool === 'eraser') {
-            ctx.clearRect(x, y, 1, 1);
-        } else {
-            ctx.fillStyle = document.getElementById('pixelColor').value;
-            ctx.fillRect(x, y, 1, 1);
+        if(x >= 0 && x < 16 && y >= 0 && y < 16) {
+          if (currentTool === 'eraser') {
+              ctx.clearRect(x, y, 1, 1);
+          } else {
+              ctx.fillStyle = document.getElementById('pixelColor').value;
+              ctx.fillRect(x, y, 1, 1);
+          }
         }
       }
 
@@ -552,7 +704,18 @@
         link.click();
       }
 
-      // 6. INITIALIZATION
+      // 6. TUTORIAL SYSTEM
+      let currentStep = 1;
+      const totalSteps = 4;
+      function showStep(step) {
+        document.querySelectorAll('.tut-step').forEach(s => s.classList.remove('active'));
+        document.getElementById('step-' + step).classList.add('active');
+        document.getElementById('tut-tracker').innerText = step + " / " + totalSteps;
+      }
+      function nextTut() { if(currentStep < totalSteps) { currentStep++; showStep(currentStep); } }
+      function prevTut() { if(currentStep > 1) { currentStep--; showStep(currentStep); } }
+
+      // 7. INITIALIZATION
       window.onload = function() {
         setTimeout(init3D, 500);
 
