@@ -58,7 +58,7 @@
       .workspace-tab.active { background: var(--current-accent); color: white; }
 
       /* WORKSPACE CONTAINERS */
-      .workspace-view { display: none; flex: 1; height: calc(100vh - 100px); }
+      .workspace-view { display: none; flex: 1; height: calc(100vh - 100px); overflow: hidden; }
       .workspace-view.active { display: flex; }
       .panel-content { padding: 30px; width: 100%; box-sizing: border-box; overflow-y: auto; }
 
@@ -78,14 +78,15 @@
 
       #datablock_container { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto;}
       #search { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white; box-sizing: border-box; }
-      .datablock { background: #333; padding: 15px; border-radius: 6px; border-left: 4px solid var(--current-accent); } 
+      .datablock { background: #333; padding: 15px; border-radius: 6px; border-left: 4px solid var(--current-accent); cursor: pointer; transition: 0.2s;} 
+      .datablock:hover { background: #444; }
       .datablock h4 { margin: 0 0 5px 0; }
 
       /* PIXEL MAKER UI */
-      .pixel-toolbar { display: flex; gap: 10px; margin-bottom: 20px; background: #222; padding: 10px; border-radius: 8px; }
+      .pixel-toolbar { display: flex; gap: 10px; margin-bottom: 20px; background: #222; padding: 10px; border-radius: 8px; align-items: center;}
       .pixel-tool { background: #444; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;}
       .pixel-tool.active { background: #55ff55; color: black; }
-      #pixelCanvas { background: transparent; border: 1px solid #555; image-rendering: pixelated; width: 320px; height: 320px; cursor: crosshair; background-image: linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333), linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333); background-size: 20px 20px; background-position: 0 0, 10px 10px; }
+      #pixelCanvas { background: transparent; border: 1px solid #555; image-rendering: pixelated; width: 320px; height: 320px; cursor: crosshair; background-image: linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333), linear-gradient(45deg, #333 25%, transparent 25%, transparent 75%, #333 75%, #333); background-size: 20px 20px; background-position: 0 0, 10px 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5);}
       
       .panel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
       .card { background: #333; padding: 20px; border-radius: 8px; border-left: 4px solid var(--current-accent); }
@@ -109,12 +110,8 @@
       <category name="Text" colour="#5ba58c"><block type="text"><field name="TEXT"></field></block><block type="text_print"><value name="TEXT"><shadow type="text"><field name="TEXT">abc</field></shadow></value></block></category>
       <category name="Lists" colour="#745ba5"><block type="lists_create_with"><mutation items="0"></mutation></block></category>
       <sep></sep>
-      <category name="Return" colour="#008855"><block type="local_this"></block><block type="proc_return"></block></category>
-      <category name="Events" colour="#a59f5b"><block type="events_onModLoads"></block><block type="events_onJoinWorld"></block><block type="events_onClientTick"></block><block type="events_onItemRender"></block></category>
-      <sep></sep>
-      <category name="Variables" colour="#a55b80" custom="VARIABLE"></category>
-      <category name="Globals" colour="#42f5bf"><block type="globals_get"></block><block type="globals_set"></block></category>
-      <category name="Functions" colour="#995ba5" custom="PROCEDURE"></category>
+      
+      <category name="Events & Setup" colour="#a59f5b"><block type="events_onModLoads"></block><block type="events_onJoinWorld"></block><block type="events_onClientTick"></block><block type="events_onItemRender"></block></category>
       <sep></sep>
 
       <category name="Blocks (H)" colour="#dd11dd"><block type="handle_BlockConstructor"></block><block type="handle_BlockBreak"></block><block type="handle_BlockAdded"></block></category>
@@ -138,6 +135,29 @@
         
         <block type="world_generate_ore"><value name="BLOCK_TYPE"><shadow type="text"><field name="TEXT">mod:custom_deepslate</field></shadow></value><value name="VEIN_SIZE"><shadow type="math_number"><field name="NUM">8</field></shadow></value><value name="MIN_Y"><shadow type="math_number"><field name="NUM">1</field></shadow></value><value name="MAX_Y"><shadow type="math_number"><field name="NUM">16</field></shadow></value></block>
         <block type="world_replace_block"><value name="TARGET_BLOCK"><shadow type="text"><field name="TEXT">minecraft:stone</field></shadow></value><value name="REPLACE_WITH"><shadow type="text"><field name="TEXT">mod:deepslate</field></shadow></value><value name="BELOW_Y_LEVEL"><shadow type="math_number"><field name="NUM">0</field></shadow></value></block>
+      </category>
+
+      <category name="Vehicles & Mechs" colour="#34495e">
+        <block type="vehicle_register_mech">
+          <value name="MECH_ID"><shadow type="text"><field name="TEXT">mod:jaeger_mark_v</field></shadow></value>
+          <value name="HEALTH"><shadow type="math_number"><field name="NUM">1000</field></shadow></value>
+          <value name="ARMOR"><shadow type="math_number"><field name="NUM">20</field></shadow></value>
+        </block>
+        <block type="vehicle_register_jet">
+          <value name="JET_ID"><shadow type="text"><field name="TEXT">mod:fighter_jet</field></shadow></value>
+          <value name="SPEED"><shadow type="math_number"><field name="NUM">3.5</field></shadow></value>
+        </block>
+        <block type="vehicle_set_seat">
+          <value name="VEHICLE"><block type="local_this"></block></value>
+          <value name="OFFSET_X"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+          <value name="OFFSET_Y"><shadow type="math_number"><field name="NUM">1.5</field></shadow></value>
+          <value name="OFFSET_Z"><shadow type="math_number"><field name="NUM">0</field></shadow></value>
+        </block>
+        <block type="vehicle_add_weapon">
+          <value name="VEHICLE"><block type="local_this"></block></value>
+          <field name="WEAPON_TYPE">PLASMA_CANNON</field>
+          <value name="DAMAGE"><shadow type="math_number"><field name="NUM">50</field></shadow></value>
+        </block>
       </category>
 
       <category name="Sound & Media" colour="#f1c40f">
@@ -193,6 +213,11 @@
       <button class="action-btn" id="export-zip-btn">Export Texture .ZIP</button>
       <button class="action-btn" id="run-btn">Run Code</button>
       
+      <div style="display:none;">
+        <button id="import"></button>
+        <button id="compile"></button>
+      </div>
+
       <div style="margin-left: 20px;">
         <label for="compiler_target">Target: </label>
         <select id="compiler_target">
@@ -242,7 +267,7 @@
 
         <div id="datablock_container">
           <input id="search" type="search" placeholder="Search logic blocks..." />
-          <div class="datablock selected" style="display: block;">
+          <div class="datablock selected" style="display: block;" onclick="alert('Switching Blockly workspace to Main Initialization')">
             <h4>Main Initialization</h4>
             <i style="color: #aaa; font-size: 0.9rem;">Type: Global Mod Event</i>
           </div>
@@ -273,13 +298,12 @@
       <input type="file" id="fileUploader" accept="image/png" style="display:none" onchange="handleFileUpload(event)">
       <button class="action-btn" style="margin-bottom: 20px;" onclick="document.getElementById('fileUploader').click()">+ Upload New .PNG Texture</button>
       
-      <div class="panel-grid" id="texture-grid">
-        </div>
+      <div class="panel-grid" id="texture-grid"></div>
     </div>
 
     <div id="view-entities" class="workspace-view panel-content">
       <h2>Entity Design Lab</h2>
-      <p>Create new mobs, adjust hitboxes, and track custom poses.</p>
+      <p>Create new mobs, mechs, and adjust hitboxes.</p>
       <button class="action-btn" style="margin-bottom: 20px;" onclick="createEntityCard()">+ Create New Entity Node</button>
       
       <div class="panel-grid" id="entity-grid">
@@ -334,12 +358,6 @@
     <script src="blocks/ReturnBlock.js"></script>
     <script src="blocks/ActionResult.js"></script>
     <script src="blocks/Utils.js"></script>
-    <script src="blocks/Dimensions.js"></script>
-    <script src="blocks/Media.js"></script>
-    <script src="blocks/AdvancedEntities.js"></script>
-    <script src="blocks/Models.js"></script>
-    <script src="blocks/Animations.js"></script>
-    <script src="blocks/Projectiles.js"></script>
 
     <script>
       document.addEventListener("DOMContentLoaded", function() {
@@ -423,22 +441,23 @@
         }
       }
 
-      // 2. Logic Tab Expansion
+      // 2. Logic Tab Expansion (Moves blocks into new logic tabs)
       function addNewLogicTab() {
         const container = document.getElementById('datablock_container');
-        const name = prompt("Name your new logic tab (e.g., 'Gun Mechanics'):", "New Feature");
+        const name = prompt("Name your new logic tab (e.g., 'Gun Mechanics' or 'Jaeger Core'):", "New Feature");
         if(name) {
             const block = document.createElement('div');
             block.className = 'datablock';
             block.style.display = 'block';
-            block.innerHTML = `<h4>${name}</h4><i style="color: #aaa; font-size: 0.9rem;">Type: Script Module</i><div style="margin-top: 10px;"><button style="background: #e74c3c; border:none; color:white; font-size: 0.8rem; padding: 4px 8px; border-radius:3px; cursor:pointer;" onclick="this.parentElement.parentElement.remove()">Delete</button></div>`;
+            block.onclick = function() { alert("Switching Blockly workspace to " + name); };
+            block.innerHTML = `<h4>${name}</h4><i style="color: #aaa; font-size: 0.9rem;">Type: Script Module</i><div style="margin-top: 10px;"><button style="background: #e74c3c; border:none; color:white; font-size: 0.8rem; padding: 4px 8px; border-radius:3px; cursor:pointer;" onclick="event.stopPropagation(); this.parentElement.parentElement.remove()">Delete</button></div>`;
             container.appendChild(block);
         }
       }
 
       // 3. Tinkers UI Generators (Entities, Dimensions, Projects, Textures)
       function createEntityCard() {
-        const name = prompt("Enter new Entity ID (e.g., mod:ghost):", "mod:new_entity");
+        const name = prompt("Enter new Entity ID (e.g., mod:gipsy_danger):", "mod:new_entity");
         if(name) document.getElementById('entity-grid').innerHTML += `<div class="card"><h4>${name}</h4><p>Status: Draft<br>No model linked</p><button class="action-btn" style="background:#e74c3c; margin-top: 10px;" onclick="this.parentElement.remove()">Delete</button></div>`;
       }
       function createDimCard() {
@@ -494,7 +513,6 @@
       let isDrawing = false;
       const pixCanvas = document.getElementById('pixelCanvas');
       const ctx = pixCanvas.getContext('2d');
-      // Set background to transparent
       ctx.clearRect(0,0,16,16);
 
       function setTool(tool) {
@@ -511,7 +529,6 @@
 
       function drawPixel(e) {
         const rect = pixCanvas.getBoundingClientRect();
-        // Calculate pixel coordinates based on scaled 320px rendering (320 / 16 = 20px per pixel)
         const scale = rect.width / 16; 
         const x = Math.floor((e.clientX - rect.left) / scale);
         const y = Math.floor((e.clientY - rect.top) / scale);
@@ -550,7 +567,7 @@
               zip.generateAsync({type:"blob"}).then(function(content) {
                   const link = document.createElement('a');
                   link.href = URL.createObjectURL(content);
-                  link.download = "EaglerForge_Pack.zip"; link.click();
+                  link.download = "EaglerForge_Custom_Pack.zip"; link.click();
               });
             });
         }
